@@ -62,6 +62,9 @@ def _parse_line(line, linen):
   ctype = "null"
   command = []
   mlength = 0
+  
+  if line[-1][-1] == ";":
+    _error("syntax error: cannot have semi-colons at the end of a line", line[0].split(":")[1], linen, " ".join(line), " ".join(line))
 
   if line[0][0] == "@":
     ctype = "func"
@@ -216,13 +219,13 @@ def _parse_line(line, linen):
           else:
             _error("value error: cannot use variable for jump placement", text, linen, " ".join(line), assemble)
         elif gtype == "_e_notvar":
-          _error("value error: invalid type", text, linen, " ".join(line), assemble)
+          _error("type error: invalid value type", text, linen, " ".join(line), assemble)
         else:
           _error("value error: variable does not exist", text, linen, " ".join(line), assemble)
         next_r = False
       else:
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
-    elif ctype == "variable":
+    elif ctype == "variable": # variable logic
       if rstring:
         if text[-1] == "\"":
           rstring_t += " " + text[:-1]
@@ -275,6 +278,8 @@ def _parse_line(line, linen):
           command.append(text)
         elif gtypes == "var":
           _error("syntax error: cannot redefign a variable", text, linen, " ".join(line), assemble)
+        elif gtypes == "_e_notvar": # check if the variable syntax is wrong
+          _error("value error: invalid type", text, linen, " ".join(line), assemble)
         else:
           _error("syntax error: must use a variable type", text, linen, " ".join(line), assemble)
       else:
@@ -333,7 +338,7 @@ def _parse_line(line, linen):
           else:
             _error("type error: type declaration does not match variable type", text, linen, " ".join(line), assemble)
         else:
-          _error("type error: unknown value type", text, linen, " ".join(line), assemble)
+          _error("type error: invalid value type", text, linen, " ".join(line), assemble)
         next_r = False
       else:
         _error("syntax error: must forward value", text, linen, " ".join(line), assemble)
@@ -378,7 +383,7 @@ def _parse_line(line, linen):
         elif gtype == "_e_none":
           _error("syntax error: variable does not exist", text, linen, " ".join(line), assemble)
         else:
-          _error("type error: unknown value type", text, linen, " ".join(line), assemble)
+          _error("type error: invalid value type", text, linen, " ".join(line), assemble)
         next_r = False
       else:
         if _get_type(text) != "_e_nothing" and len(command) == 1:
