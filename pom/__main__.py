@@ -67,35 +67,31 @@ def compilet(itext, output, replaceargs):
   with open(output, 'w') as file:
     file.write(string)
 
-parser = argparse.ArgumentParser(description="The Pom language compiler and runtime script", allow_abbrev=False)
+parser = argparse.ArgumentParser(description="The Pom language compiler and runtime script", allow_abbrev=False, add_help=False)
+
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('run', action='store', metavar=('run'), help="Run a compiled Pom file", nargs='?', default=None)
 group.add_argument('-c', '--compile',  nargs=2, action='store', metavar=('input', 'output'), help="Compile a Pom source code file")
+group.add_argument('-pc', '--pom_code',  nargs=1, action='store', metavar=('file'), help="Run a PomCode JSON file")
+group.add_argument('-h', '--help', action='store_true', help="List this help menu and exit")
 parser.add_argument('-r', '--replace', nargs=2, metavar=('variable', 'value'), action="append", help="Add a preprocesser replace item, only used with -c / --compile")
-parser.add_argument('--replace_file', metavar=('file'), action="append", help="Add a preprocesser replace json file, only used with -c / --compile")
 
 args = parser.parse_args()
 replaceargs = {}
 
-if args.replace_file != None:
-  if args.compile == None:
-    parser.error('-rf / --replace_file can only be used with -c / --compile')
-  for item in args.replace_file:
-    try:
-      with open(item, 'r') as file:
-        text = file.read()
-    except:
-      parser.error('\"' + item + '\" file not found')
+if args.help != False:
+  print("""usage: pom [run] [-h] [-c input output] [-pc file] [-r variable value]
 
-    try:
-      jsontext = json.loads(text)
-    except Exception as e:
-      parser.error('file \"' + item + '\" not correct JSON: \n' + e)
-  
-    for key in jsontext:
-      if key in replaceargs:
-        print("warning: key \"" + key +  "\" already exists")
-      replaceargs[str(key)] = str(jsontext[key])
+PomCode Commands:
+  -pc / --pom_code [file] ............ Run a PomCode JSON file
+
+Pom Commands:
+  [run] .............................. Run a compiled Pom file
+  -c / --compile [input] [output] .... Compile a Pom source code file
+  -r / --replace [variable] [value] .. Add a preprocesser replace item, only used with -c / --compile
+
+Misc Commands:
+  -h / --help ........................ List this help menu and exit""")
 
 if args.replace != None:
   if args.compile == None:
@@ -120,3 +116,15 @@ if args.run != None:
   except:
     parser.error('\"' + args.run + '\" file not found')
   runt(text)
+
+if args.pom_code != None:
+  try:
+    with open(args.pom_code[0], 'r') as file:
+      jsond = json.loads(file.read())
+  except:
+    parser.error('\"' + args.pom_code[0] + '\" file not found or invalid JSON')
+
+  m = application.memory()
+  m.load(jsond, autosize=True)
+  a = application.emulator(m)
+  a.run()
