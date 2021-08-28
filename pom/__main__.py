@@ -1,10 +1,15 @@
-import argparse, sys, json
+import argparse, sys, json, os
 import application
 import compiler
 import preprocesser
 
+#TODO: Try to sence the operating system and switch off the colors.
+
 def _error(place, text):
-  print("\033[91merror: " + place + ": " + text + "\033[00m")
+  if os.name == 'nt':
+    print("error: " + place + ": " + text)
+  else:
+    print("\033[91merror: " + place + ": " + text + "\033[00m")
   sys.exit(0)
 
 def runt(text):
@@ -67,9 +72,26 @@ def compilet(itext, output, replaceargs):
   with open(output, 'w') as file:
     file.write(string)
 
+def shell():
+  string = ""
+  while True:
+    try:
+      instr = input("...")
+      if instr == ":run":
+        return string
+      elif instr == ":ext":
+        sys.exit()
+      elif instr == ":res":
+        string = ""
+        print("ShellReset")
+      else:
+        string += instr + "\n"
+    except KeyboardInterrupt:
+      print("\nKeyboardInterrupt")
+
 parser = argparse.ArgumentParser(description="The Pom language compiler and runtime script", allow_abbrev=False, add_help=False)
 
-group = parser.add_mutually_exclusive_group(required=True)
+group = parser.add_mutually_exclusive_group()
 group.add_argument('run', action='store', metavar=('run'), help="Run a compiled Pom file", nargs='?', default=None)
 group.add_argument('-c', '--compile',  nargs=2, action='store', metavar=('input', 'output'), help="Compile a Pom source code file")
 group.add_argument('-pc', '--pom_code',  nargs=1, action='store', metavar=('file'), help="Run a PomCode JSON file")
@@ -92,6 +114,16 @@ Pom Commands:
 
 Misc Commands:
   -h / --help ........................ List this help menu and exit""")
+
+if len(sys.argv) == 1:
+  print("Pom Shell")
+  print("Type \":run\" to run the code, \":ext\" to exit the Shell and \":res\" to reset the Shell")
+  out = shell()
+  d = compiler.compile(out)
+  m = application.memory()
+  m.load(d, autosize=True)
+  a = application.emulator(m)
+  a.run()
 
 if args.replace != None:
   if args.compile == None:

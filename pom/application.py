@@ -1,7 +1,10 @@
-import sys
+import sys, os
 
 def _error(place, text):
-  print("\n\033[91merror: " + place + ": " + text + "\033[00m")
+  if os.name == 'nt':
+    print("error: " + place + ": " + text)
+  else:
+    print("\n\033[91merror: " + place + ": " + text + "\033[00m")
   sys.exit(0)
 
 def _is_int(string):
@@ -144,24 +147,27 @@ class emulator(object):
     return True
 
   def run(self):
-    current = []
-    while True:
-      self.registers["pointer"] += 1
-      command = self.memory[self.registers["pointer"]]
-      if command == [0,0]:
-        _error("executable", "cannot execute value")
-      if command[0] == 1:
-        if current != []:
-          returnv = self.__execute(current)
-          if _is_int(returnv):
-            current = []
-            self.registers["pointer"] = returnv
-            continue
-        if command[1] == 0:
-          break
-        current = []
-        current.append(command[1])
-      elif command[0] == 2:
-        if current != []:
+    try:
+      current = []
+      while True:
+        self.registers["pointer"] += 1
+        command = self.memory[self.registers["pointer"]]
+        if command == [0,0]:
+          _error("executable", "cannot execute value")
+        if command[0] == 1:
+          if current != []:
+            returnv = self.__execute(current)
+            if _is_int(returnv):
+              current = []
+              self.registers["pointer"] = returnv
+              continue
+          if command[1] == 0:
+            break
+          current = []
           current.append(command[1])
-    print("\ninfo: executable: done")
+        elif command[0] == 2:
+          if current != []:
+            current.append(command[1])
+      print("\ninfo: executable: done")
+    except KeyboardInterrupt:
+      _error("executable", "keyboard interrupt")
