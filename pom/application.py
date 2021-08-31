@@ -144,6 +144,14 @@ class emulator(object):
       print(str(self.memory[command[1]][1]).replace("\\n", "\n"), end="")
     elif command[0] == 9:
       sys.stdout.flush()
+    elif command[0] == 10:
+      text = input()
+      for num in range(command[2]):
+        if num+1 > len(text):
+          char = ''
+        else:
+          char = text[num]
+        self.memory[num+command[1]] = [2, char]
     return True
 
   def run(self):

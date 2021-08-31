@@ -76,6 +76,8 @@ def _parse_line(line, linen):
     command.append(line[0][1:])
   elif line[0] == "%if":
     ctype = "if"
+  elif line[0] == "%input":
+    ctype = "input"
   elif len(line[0].split(":")) >= 2:
     ctype = "variable"
     fcommand = line[0].split(":")
@@ -139,8 +141,10 @@ def _parse_line(line, linen):
         else:
           rstring_t += " " + text
       elif text == "<":
-        if len(command) == 2 and command[0] == "jump":
-          _error("forward error: cannot forward more than one value with jump function", text, linen, " ".join(line), assemble)
+        if len(command) == 2 and command[0] in ["jump", "input"]:
+          _error("forward error: cannot forward more than one value with " + command[0] + " function", text, linen, " ".join(line), assemble)
+        elif len(command) == 1 and command[0] in ["exit", "flush"]:
+          _error("forward error: " + command[0] + " cannot take parameters", text, linen, " ".join(line), assemble)
         if next_r == True:
           _error("forward error: cannot forward a forward", text, linen, " ".join(line), assemble)
         else:
@@ -158,7 +162,7 @@ def _parse_line(line, linen):
           if command[0] == "jump":
             _error("value error: cannot use variable for jump function", text, linen, " ".join(line), assemble)
           else:
-            command.append([variables[text][0], variables[text][1]])
+            command.append(variables[text])
         else:
           if command[0] == "jump":
             _error("value error: cannot use variable for jump function", text, linen, " ".join(line), assemble)
@@ -437,6 +441,16 @@ def _parse_line(line, linen):
             actions.append([1, 8])
             actions.append([2, count+start])
             count += 1
+    elif command[0] == "input":
+      if type(command[1]) == list:
+        if command[1][2] == "string":
+          actions.append([1, 10])
+          actions.append([3, command[1][0]])
+          actions.append([2, command[1][3]])
+        else:
+          _error("type error: variable must be a string", text, linen, " ".join(line), assemble)
+      else:
+        _error("type error: input function parameter must be a variable", text, linen, " ".join(line), assemble)
     elif command[0] == "jump":
       if len(command) != 2:
         _error("forward error: must forward a value", line[0], linen, " ".join(line), "")
@@ -446,6 +460,8 @@ def _parse_line(line, linen):
       actions.append([1, 9])
     elif command[0] == "exit":
       actions.append([1, 0])
+    else:
+      _error("syntax error: not a valid function", line[0], linen, " ".join(line), "")
   
   elif ctype == "variable":
     startn = len(variablel)
