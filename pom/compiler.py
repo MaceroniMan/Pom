@@ -76,8 +76,6 @@ def _parse_line(line, linen):
     command.append(line[0][1:])
   elif line[0] == "%if":
     ctype = "if"
-  elif line[0] == "%input":
-    ctype = "input"
   elif len(line[0].split(":")) >= 2:
     ctype = "variable"
     fcommand = line[0].split(":")
