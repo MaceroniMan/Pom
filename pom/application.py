@@ -113,7 +113,10 @@ class emulator(object):
     elif command[0] == 5:
       befornum = str(self.registers["math1"][2])
       if len(befornum) > command[2]-command[1]:
-        print("\n\033[91mruntime error on line " + str(command[3]) + "\033[00m")
+        try:
+          print("\n\033[91mruntime error on line " + str(command[3]) + "\033[00m")
+        except:
+          pass
         _error("memory leak", "value is too large for allocated space")
       else:
         numzs = (command[2]-command[1]) - len(befornum)

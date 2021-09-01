@@ -81,13 +81,17 @@ def _parse_line(line, linen):
     fcommand = line[0].split(":")
     if fcommand[0] == "int":
       command.append("int")
-      if _is_int(fcommand[1]):
+      if fcommand[1] == "~":
+        command.append(str(fcommand[1]))
+      elif _is_int(fcommand[1]):
         command.append(int(fcommand[1]))
       else:
         _error("value error: length descriptor must be int", fcommand[1], linen, " ".join(line), fcommand[0] + ":")
     elif fcommand[0] == "string":
       command.append("string")
-      if _is_int(fcommand[1]):
+      if fcommand[1] == "~":
+        command.append(str(fcommand[1]))
+      elif _is_int(fcommand[1]):
         command.append(int(fcommand[1]))
       else:
         _error("value error: length descriptor must be int", fcommand[1], linen, " ".join(line), fcommand[0] + ":")
@@ -232,19 +236,24 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
+
     elif ctype == "variable": # variable logic
       if rstring:
         if text[-1] == "\"":
           rstring_t += " " + text[:-1]
-          if len(rstring_t) > command[1]:
-            _error("value error: added value is too long", text, linen, " ".join(line), assemble)
-          else:
+          if command[1] == "~":
             command.append(rstring_t)
+          else:
+            if len(rstring_t) > command[1]:
+              _error("value error: added value is too long", text, linen, " ".join(line), assemble)
+            else:
+              command.append(rstring_t)
           rstring = False
         else:
           rstring_t += " " + text
-          if len(rstring_t) > command[1]:
-            _error("value error: value is too long", text, linen, " ".join(line), assemble)
+          if not command[1] == "~":
+            if len(rstring_t) > command[1]:
+              _error("value error: value is too long", text, linen, " ".join(line), assemble)
       elif text == "<":
         if value == False:
           _error("name error: name cannot be a forward", text, linen, " ".join(line), assemble)
@@ -257,14 +266,23 @@ def _parse_line(line, linen):
         gtype = _get_type(text)
         if (gtype == "starts" and command[0] == "string") or command[0] == gtype:
           if gtype == "string":
-            if len(text[1:-1]) > command[1]:
-              _error("value error: value is too long", text, linen, " ".join(line), assemble)
-            else:
+            if command[1] == "~":
               command.append(text[1:-1])
-          elif gtype == "int":
-            if len(text) > command[1]:
-              _error("value error: value is too long", text, linen, " ".join(line), assemble)
             else:
+              if len(text[1:-1]) > command[1]:
+                _error("value error: value is too long", text, linen, " ".join(line), assemble)
+              else:
+                command.append(text[1:-1])
+          elif gtype == "int":
+            con = False
+            if command[1] == "~":
+              con = True
+            else:
+              if len(text) > command[1]:
+               _error("value error: value is too long", text, linen, " ".join(line), assemble)
+              else:
+                con = True
+            if con:
               if len(command) == 4:
                 _error("forward error: cannot forward type 'int'", text, linen, " ".join(line), assemble)
               else:
@@ -464,15 +482,22 @@ def _parse_line(line, linen):
   elif ctype == "variable":
     startn = len(variablel)
     if len(command) == 3:
+      if command[1] == "~":
+        _error("syntax error: cannot auto-set a blank variable", text, linen, " ".join(line), assemble)
       joinv = ""
     elif command[0] == "int":
       joinv = str(command[3])
     else:
       joinv = "".join(command[3:])
-    if len(joinv) > command[1]:
-      _error("type error: forwarded value is too long", text, linen, " ".join(line), assemble)
+    if command[1] == "~":
+      length = len(joinv)
+    else:
+      if len(joinv) > command[1]:
+        _error("type error: forwarded value is too long", text, linen, " ".join(line), assemble)
+      else:
+        length = command[1]
 
-    for i in range(command[1]):
+    for i in range(length):
       if i < len(joinv):
         if command[0] == "int":
           if joinv[i] == "-":
@@ -483,7 +508,7 @@ def _parse_line(line, linen):
           variablel.append([2, joinv[i]])
       else:
         variablel.append([2, ''])
-    variables[command[2]] = [startn, len(variablel), command[0], command[1]]
+    variables[command[2]] = [startn, len(variablel), command[0], length]
 
   elif ctype == "reset":
     var = variables[command[0]]

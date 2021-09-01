@@ -8,6 +8,8 @@ except:
   import pom.compiler as compiler
   import pom.preprocesser as preprocesser
 
+VERSION = "0.2"
+
 def _error(place, text):
   if os.name == 'nt':
     print("error: " + place + ": " + text)
@@ -83,10 +85,15 @@ def shell():
       if instr == ":run":
         return string
       elif instr == ":ext":
+        print("ShellExit")
         sys.exit()
       elif instr == ":res":
         string = ""
         print("ShellReset")
+      elif instr == ":dmp":
+        compilet(string, "shelldump", {})
+        print("ShellDump")
+        sys.exit()
       else:
         string += instr + "\n"
     except KeyboardInterrupt:
@@ -100,13 +107,14 @@ if __name__ == "__main__":
   group.add_argument('-c', '--compile',  nargs=2, action='store', metavar=('input', 'output'), help="Compile a Pom source code file")
   group.add_argument('-pc', '--pom_code',  nargs=1, action='store', metavar=('file'), help="Run a PomCode JSON file")
   group.add_argument('-h', '--help', action='store_true', help="List this help menu and exit")
+  group.add_argument('-v', '--version', action='store_true', help="List the current Pom version")
   parser.add_argument('-r', '--replace', nargs=2, metavar=('variable', 'value'), action="append", help="Add a preprocesser replace item, only used with -c / --compile")
 
   args = parser.parse_args()
   replaceargs = {}
 
   if args.help != False:
-    print("""usage: pom [run] [-h] [-c input output] [-pc file] [-r variable value]
+    print("""usage: pom [run] [-h] [-v] [-c input output] [-pc file] [-r variable value]
 
 PomCode Commands:
   -pc / --pom_code [file] ............ Run a PomCode JSON file
@@ -117,11 +125,15 @@ Pom Commands:
   -r / --replace [variable] [value] .. Add a preprocesser replace item, only used with -c / --compile
 
 Misc Commands:
-  -h / --help ........................ List this help menu and exit""")
+  -h / --help ........................ List this help menu and exit
+  -v / --version ..................... List the current Pom version""")
+
+  if args.version != False:
+    print("Pom Version " + VERSION)
 
   if len(sys.argv) == 1:
-    print("Pom Shell")
-    print("Type \":run\" to run the code, \":ext\" to exit the Shell and \":res\" to reset the Shell")
+    print("Pom Shell v" + VERSION)
+    print("Type \":run\" to run the code, \":ext\" to exit the Shell and \":res\" to reset the Shell, \":dmp\" to compile the file to 'shelldump'")
     out = shell()
     d = compiler.compile(out)
     m = application.memory()
