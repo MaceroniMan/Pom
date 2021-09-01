@@ -83,18 +83,28 @@ def _parse_line(line, linen):
       command.append("int")
       if fcommand[1] == "~":
         command.append(str(fcommand[1]))
+      elif fcommand[1] == "":
+        print(fcommand)
+        _error("syntax error: length descriptor field cannot be left empty", ":", linen, " ".join(line), fcommand[0]+":")
       elif _is_int(fcommand[1]):
         command.append(int(fcommand[1]))
       else:
-        _error("value error: length descriptor must be int", fcommand[1], linen, " ".join(line), fcommand[0] + ":")
+        _error("value error: length descriptor must be int", fcommand[1], linen, " ".join(line), fcommand[0] + ":" + fcommand[1])
     elif fcommand[0] == "string":
       command.append("string")
       if fcommand[1] == "~":
         command.append(str(fcommand[1]))
+      elif fcommand[1] == "":
+        _error("syntax error: length descriptor field cannot be left empty", ":", linen, " ".join(line), fcommand[0]+":")
       elif _is_int(fcommand[1]):
         command.append(int(fcommand[1]))
       else:
-        _error("value error: length descriptor must be int", fcommand[1], linen, " ".join(line), fcommand[0] + ":")
+        _error("value error: length descriptor must be int", fcommand[1], linen, " ".join(line), fcommand[0] + ":" + fcommand[1])
+    else:
+      if fcommand[0] == "":
+        _error("syntax error: cannot have blank type field", ":", linen, " ".join(line), "")
+      else:
+        _error("syntax error: variable type " + fcommand[0] + " does not exist", fcommand[0], linen, " ".join(line), "")
   elif line[0] in variables:
     do = True
     for item in maths:

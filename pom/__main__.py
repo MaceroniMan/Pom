@@ -8,7 +8,7 @@ except:
   import pom.compiler as compiler
   import pom.preprocesser as preprocesser
 
-VERSION = "0.2"
+VERSION = "0.3"
 
 def _error(place, text):
   if os.name == 'nt':
