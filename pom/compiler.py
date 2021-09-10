@@ -384,9 +384,7 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("syntax error: must forward value", text, linen, " ".join(line), assemble)
-
-
-    elif ctype == "type": ########################################################
+    elif ctype == "type":
       if text == "<":
         if value == False:
           _error("name error: variable cannot be a forward", text, linen, " ".join(line), assemble)
@@ -417,8 +415,6 @@ def _parse_line(line, linen):
           _error("syntax error: must use a variable type", text, linen, " ".join(line), assemble)
       else:
         _error("syntax error: must forward a internals type", text, linen, " ".join(line), assemble)
-
-
     elif ctype == "math":
       var = variables[command[0]]
       if text == "<":
@@ -701,8 +697,6 @@ def _parse_line(line, linen):
       actions.append([3, item])
       actions.append([2, num])
       actions.append([3, item])
-    
-    # Continue Here
 
 def compile(text):
   lines = text.split("\n")
@@ -756,7 +750,5 @@ def compile(text):
     big_d[count] = [1,0]
   elif actions[-1] != [1,0]:
     big_d[count] = [1,0]
-  
-  print(big_d)
   
   return big_d

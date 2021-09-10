@@ -170,7 +170,10 @@ class emulator(object):
         if first[1] in ["-", ".", ""]:
           first[1] = first[1]
         else:
-          first[1] = int(first[1])
+          try:
+            first[1] = int(first[1])
+          except:
+            _error("type error", "value \"" + first[1] + "\" cannot be converted into an int")
       self.memory[command[3]] = first
     return True
 
