@@ -17,6 +17,13 @@ def _is_int(string):
   except:
     return False
 
+def _strip(number):
+  number = str(number)
+  if number.endswith(".0"):
+    return int(number[:-2])
+  else:
+    return float(number)
+
 class memory(object):
   def __init__(self, length=255):
     self.__memory = {}
@@ -133,16 +140,16 @@ class emulator(object):
       addnum = ""
       for item in range(command[1], command[2]):
         addnum += str(self.memory[item][1])
-      self.registers["math1"][command[3]] = int(addnum)
+      self.registers["math1"][command[3]] = float(addnum)
     elif command[0] == 7:
       if command[1] == "+":
-        self.registers["math1"][2] = self.registers["math1"][0] + self.registers["math1"][1]
+        self.registers["math1"][2] = _strip(round(self.registers["math1"][0] + self.registers["math1"][1], 1))
       elif command[1] == "-":
-        self.registers["math1"][2] = self.registers["math1"][0] - self.registers["math1"][1]
+        self.registers["math1"][2] = _strip(round(self.registers["math1"][0] - self.registers["math1"][1], 1))
       elif command[1] == "*":
-        self.registers["math1"][2] = self.registers["math1"][0] * self.registers["math1"][1]
+        self.registers["math1"][2] = _strip(round(self.registers["math1"][0] * self.registers["math1"][1], 1))
       elif command[1] == "/":
-        self.registers["math1"][2] = round(self.registers["math1"][0] / self.registers["math1"][1], 1)
+        self.registers["math1"][2] = _strip(round(self.registers["math1"][0] / self.registers["math1"][1], 1))
     elif command[0] == 8:
       print(str(self.memory[command[1]][1]).replace("\\n", "\n"), end="")
     elif command[0] == 9:
@@ -155,6 +162,16 @@ class emulator(object):
         else:
           char = text[num]
         self.memory[num+command[1]] = [2, char]
+    elif command[0] == 11:
+      first = self.memory[command[1]]
+      if command[2] == 1:
+        first[1] = str(first[1])
+      elif command[2] == 2:
+        if first[1] in ["-", ".", ""]:
+          first[1] = first[1]
+        else:
+          first[1] = int(first[1])
+      self.memory[command[3]] = first
     return True
 
   def run(self):

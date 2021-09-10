@@ -52,6 +52,11 @@ def _get_type(string):
     return "int_operator"
   elif string in maths:
     return "math_symbol"
+  elif string[0] == ":":
+    if string[1:] in ["string", "int"]:
+      return "internal_type"
+    else:
+      return "_e_type"
   else:
     bad = False
     for char in string:
@@ -71,11 +76,13 @@ def _parse_line(line, linen):
   if line[-1][-1] == ";":
     _error("syntax error: cannot have semi-colons at the end of a line", line[0].split(":")[1], linen, " ".join(line), " ".join(line))
 
-  if line[0][0] == "@":
+  if line[0] == "@if":
+    ctype = "if"
+  elif line[0] == "@type":
+    ctype = "type"
+  elif line[0][0] == "@":
     ctype = "func"
     command.append(line[0][1:])
-  elif line[0] == "%if":
-    ctype = "if"
   elif len(line[0].split(":")) >= 2:
     ctype = "variable"
     fcommand = line[0].split(":")
@@ -84,7 +91,6 @@ def _parse_line(line, linen):
       if fcommand[1] == "~":
         command.append(str(fcommand[1]))
       elif fcommand[1] == "":
-        print(fcommand)
         _error("syntax error: length descriptor field cannot be left empty", ":", linen, " ".join(line), fcommand[0]+":")
       elif _is_int(fcommand[1]):
         command.append(int(fcommand[1]))
@@ -246,8 +252,7 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
-
-    elif ctype == "variable": # variable logic
+    elif ctype == "variable":
       if rstring:
         if text[-1] == "\"":
           rstring_t += " " + text[:-1]
@@ -305,7 +310,10 @@ def _parse_line(line, linen):
           if gtype in ["var", "_e_none"]:
             _error("type error: cannot use variables in defign statement", text, linen, " ".join(line), assemble)
           else:
-            _error("type error: type declaration does not match value type", text, linen, " ".join(line), assemble)
+            if gtype == "_e_notvar": # check if the variable syntax is wrong
+              _error("type error: invalid value type", text, linen, " ".join(line), assemble)
+            else:
+              _error("type error: type declaration does not match value type", text, linen, " ".join(line), assemble)
       elif next_r == False and value == False:
         gtypes = _get_type(text)
         if gtypes == "_e_none":
@@ -314,12 +322,11 @@ def _parse_line(line, linen):
         elif gtypes == "var":
           _error("syntax error: cannot redefign a variable", text, linen, " ".join(line), assemble)
         elif gtypes == "_e_notvar": # check if the variable syntax is wrong
-          _error("value error: invalid type", text, linen, " ".join(line), assemble)
+          _error("type error: invalid value type", text, linen, " ".join(line), assemble)
         else:
           _error("syntax error: must use a variable type", text, linen, " ".join(line), assemble)
       else:
         _error("syntax error: must forward value", text, linen, " ".join(line), assemble)
-    # Re-Set a variable
     elif ctype == "reset":
       var = variables[command[0]]
       if rstring:
@@ -378,7 +385,40 @@ def _parse_line(line, linen):
       else:
         _error("syntax error: must forward value", text, linen, " ".join(line), assemble)
 
-  
+
+    elif ctype == "type": ########################################################
+      if text == "<":
+        if value == False:
+          _error("name error: variable cannot be a forward", text, linen, " ".join(line), assemble)
+        else:
+          if next_r == True:
+            _error("forward error: can only forward once", text, linen, " ".join(line), assemble)
+          else:
+            next_r = True
+      elif next_r:
+        gtype = _get_type(text)
+        if gtype == "internal_type":
+          command.append(text[1:])
+        elif gtype == "_e_type":
+          _error("value error: " + text[1:] + " is not a valid internals type", text, linen, " ".join(line), assemble)
+        else:
+          _error("value error: invalid type, internals type expected", text, linen, " ".join(line), assemble)
+        next_r = False
+      elif next_r == False and value == False:
+        gtypes = _get_type(text)
+        if gtypes == "_e_none":
+          _error("value error: variable does not exist", text, linen, " ".join(line), assemble)
+        elif gtypes == "var":
+          value = True
+          command.append(text)
+        elif gtypes == "_e_notvar": # check if the variable syntax is wrong
+          _error("type error: invalid value type", text, linen, " ".join(line), assemble)
+        else:
+          _error("syntax error: must use a variable type", text, linen, " ".join(line), assemble)
+      else:
+        _error("syntax error: must forward a internals type", text, linen, " ".join(line), assemble)
+
+
     elif ctype == "math":
       var = variables[command[0]]
       if text == "<":
@@ -510,7 +550,7 @@ def _parse_line(line, linen):
     for i in range(length):
       if i < len(joinv):
         if command[0] == "int":
-          if joinv[i] == "-":
+          if joinv[i] in ["-", "."]:
             variablel.append([2, joinv[i]])
           else:
             variablel.append([2, int(joinv[i])])
@@ -543,9 +583,12 @@ def _parse_line(line, linen):
         #else:
         for i in range(var[3]):
           actions.append([1, 2])
-          actions.append([3, i])
+          actions.append([3, var[0]+i])
           if i < len(joinv):
-            actions.append([2, int(joinv[i])])
+            if joinv[i] in ["-", "."]:
+              actions.append([2, joinv[i]])
+            else:
+              actions.append([2, int(joinv[i])])
           else:
             actions.append([2, ''])
     else:
@@ -603,7 +646,8 @@ def _parse_line(line, linen):
       _error("syntax error: if function needs at least one jump argument", text, linen, " ".join(line), assemble)
   
   elif ctype == "math":
-    var = variables[command[0]]
+    var = variables[command[0]] # get the STARTING variable, all other mathing vars
+    # are already included in the command menu
 
     if len(command) != 4:
       _error("syntax error: math function missing arguments", text, linen, " ".join(line), assemble)
@@ -638,11 +682,32 @@ def _parse_line(line, linen):
       actions.append([3, var[0]])
       actions.append([3, var[1]])
       actions.append([2, linen+1])
+  
+  elif ctype == "type":
+    var = variables[command[0]]
+
+    if len(command) < 2:
+      _error("syntax error: type function needs change type", text, linen, " ".join(line), assemble)
+
+    variables[command[0]][2] = command[1]
+
+    if command[1] == "int":
+      num = 2
+    elif command[1] == "string":
+      num = 1
+
+    for item in range(var[0], var[1]):
+      actions.append([1, 11])
+      actions.append([3, item])
+      actions.append([2, num])
+      actions.append([3, item])
+    
+    # Continue Here
 
 def compile(text):
   lines = text.split("\n")
   for line in range(len(lines)):
-    command = lines[line].split(" ")
+    command = lines[line].rstrip().split(" ")
     if (len(lines[line]) - len(lines[line].lstrip())) == len(lines[line]):
       pass
     elif (len(lines[line]) - len(lines[line].lstrip())) >= 1:
@@ -691,5 +756,7 @@ def compile(text):
     big_d[count] = [1,0]
   elif actions[-1] != [1,0]:
     big_d[count] = [1,0]
+  
+  print(big_d)
   
   return big_d
