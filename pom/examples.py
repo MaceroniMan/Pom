@@ -7,7 +7,7 @@ examples = {
 int:3 l # defign a new variable
 
 
-%if count == 20 < "break" # if count is 20 then continue, otherwise jump to point                                 'break'
+@if count == 20 < "break" # if count is 20 then continue, otherwise jump to point                                 'break'
 
 l < count + 1 # add 1 to that variable
 
@@ -21,6 +21,7 @@ count < count + 1 # increment the count variable
 >break< # defign a new jump point
 
 @exit # exit the program""",
+
   "inputmath" : """string:3 num1 # make a blank string variable
 string:3 num2 # make a blank string variable
 
