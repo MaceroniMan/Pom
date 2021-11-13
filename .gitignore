@@ -1,6 +1,7 @@
 /dev/
 **/__pycache__
 .breakpoints
+.pip_output
 poetry.lock
 pyproject.toml
 main.py

@@ -1,4 +1,4 @@
-import os, sys, shutil
+import os, sys, shutil, subprocess
 
 def getLocation():
   if os.name == "nt":
@@ -32,5 +32,26 @@ def install():
   log("done (enter to finish installer)")
   input()
 
+print(""" _____              _         _       _ _         
+|  _  |___ _____   | |___ ___| |_  __| | |___ ___ 
+|   __| . |     |  | |   |_ -|  _||. | | | -_|  _|
+|__|  |___|_|_|_|  |_|_|_|___| | |___|_|_|___|_|  
+                             |__|                 """)
+
+log("starting module install...")
+
+with open(".pip_output", "w") as pipOut:
+  outputv = subprocess.run([sys.executable, "-m", "pip", "install", "."], stdout=pipOut, stderr=pipOut)
+
+if str(outputv.returncode) == "0":
+  log("done")
+else:
+  log("pip install failed, see '.pip_output'")
+  sys.exit()
+
+log("cleaning up...")
+os.remove(".pip_output")
+log("done\n")
+
 log("starting pom install...")
-install()
+#install()

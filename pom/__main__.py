@@ -1,4 +1,5 @@
 import argparse, sys, json, os
+import urllib.request
 try:
   import application
   import compiler
@@ -10,7 +11,7 @@ except:
   import pom.preprocesser as preprocesser
   import pom.examples as examples
 
-VERSION = "0.5"
+VERSION = "0.6"
 
 def _error(place, text):
   if os.name == 'nt':
@@ -18,6 +19,25 @@ def _error(place, text):
   else:
     print("\033[91merror: " + place + ": " + text + "\033[00m")
   sys.exit(0)
+
+def webversion():
+  version = None
+  try:
+    with urllib.request.urlopen('https://raw.githubusercontent.com/MaceroniMan/Pom/master/README.md') as response:
+      html = response.read().decode("ascii")
+      lines = html.split("\n")
+      for line in lines:
+        if line.startswith("> Version"):
+          version = line.split(" ")[2]
+        else:
+          pass
+  except:
+    print("Failed to check version")
+    return
+  if float(version) > float(VERSION):
+    print("Out of date, current version: " + version)
+  else:
+    print("Up to date")
 
 def runt(text):
   listelems = []
@@ -139,6 +159,7 @@ Simple Commands:
 
   if args.version != False:
     print("Pom Version " + VERSION)
+    webversion()
 
   if args.example != None:
     if args.example == True:
