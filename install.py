@@ -40,8 +40,14 @@ print(""" _____              _         _       _ _
 
 log("starting module install...")
 
-with open(".pip_output", "w") as pipOut:
-  outputv = subprocess.run([sys.executable, "-m", "pip", "install", "."], stdout=pipOut, stderr=pipOut)
+try:
+  with open(".pip_output", "w") as pipOut:
+    outputv = subprocess.run([sys.executable, "-m", "pip", "install", "."], stdout=pipOut, stderr=pipOut)
+except KeyboardInterrupt:
+  os.remove(".pip_output")
+  print("")
+  log("pip install failed, keyboard interrupt")
+  sys.exit()
 
 if str(outputv.returncode) == "0":
   log("done")
@@ -53,5 +59,7 @@ log("cleaning up...")
 os.remove(".pip_output")
 log("done\n")
 
+input()
+
 log("starting pom install...")
-#install()
+install()

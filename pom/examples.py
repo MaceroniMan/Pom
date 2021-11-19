@@ -38,12 +38,66 @@ int:6 end # make a blank int variable
 
 end < num1 + num2 # add num1 variable and num2 variable together
 
-@print < end # print out the end value"""
+@print < end # print out the end value""",
+
+  "calculator" : """@print < "Calculator" # Print out a string
+
+>loop< # Make a new jump point
+
+string:1 sign # Make a new blank string variable
+
+string:5 num1 # Make a new blank string variable
+string:5 num2 # Make a new blank string variable
+
+@print < "Number One: " # print out the input prompt
+@input < num1 # get input and put it in the num1 variable
+
+@print < "\nChoose the method: *,-,+,/ " # print out the input prompt
+@input < sign # get input and put it in the num1 variable
+
+@print < "Number Two: " # print out the input prompt
+@input < num2 # get input and put it in the num1 variable
+
+@print < "\n" < num1 < sign < num2 # Print out three variables back-to-back
+
+@type num1 < :int # Change the type of variable
+@type num2 < :int # Change the type of variable
+
+int:10 end # Make a new blank int variable0
+
+@if sign == "+" < "neg" # If the sign is + then continue, else go to the next if statement
+end < num1 + num2 # Adds two numbers together
+@jump < "end" # Skip the next if statements
+
+>neg< # Make a new jump point
+@if sign == "-" < "mul" # If the sign is - then continue, else go to the next if statement
+end < num1 - num2 # Subtracts the two numbers together
+@jump < "end" # Skip the next if statements
+
+>mul< # Make a new jump point
+@if sign == "*" < "div" # If the sign is * then continue, else go to the next if statement
+end < num1 * num2 # Multiply the two numbers
+@jump < "end" # Skip the next if statements
+
+>div< # Make a new jump point
+@if sign == "/" < "err" # If the sign is / then continue, else go to the error message
+end < num1 / num2 # Divides the two numbers
+@jump < "end" # Jump past the error
+
+>err< # Make a new jump point
+@print < "\n" < sign < " is an invalid sign" # Print the error message
+@exit # Exit the program
+
+>end< # Make a new jump point
+@print < "=" < end # Print the ending result
+
+@jump < "loop" # Loop the entire program again"""
 }
 
 decs = {
   "counting" : "A script that counts up to number 20 printing out each number",
-  "inputmath" : "A script that takes 2 numbers and adds them together"
+  "inputmath" : "A script that takes 2 numbers and adds them together",
+  "calculator" : "A script that you input 2 numbers and a sign (*,-,+,/) and it does the math"
 }
 
 def listexamples():

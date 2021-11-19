@@ -8,7 +8,8 @@ setup(
   url = "https://github.com/MaceroniMan/Pom",
   packages=['pom'],
   classifiers=[
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Topic :: Utilities",
+    "Operating System :: OS Independent",
   ],
 )

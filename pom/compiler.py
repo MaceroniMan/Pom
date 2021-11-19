@@ -633,8 +633,8 @@ def _parse_line(line, linen):
         actions.append([2, (len(values)-1)+len(char)])
 
     if len(command) == 4:
-      actions.append([5, command[3], text, linen, " ".join(line), assemble])
       actions.append([4, len(actions)])
+      actions.append([5, command[3], text, linen, " ".join(line), assemble])
     elif len(command) == 5:
       actions.append([5, command[3], text, linen, " ".join(line), assemble])
       actions.append([5, command[4], text, linen, " ".join(line), assemble])
