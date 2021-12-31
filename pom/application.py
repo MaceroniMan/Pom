@@ -43,20 +43,29 @@ class memory(object):
     return self.__memory
 
   def __setitem__(self, key, item):
-    if key <= self.__length:
-      self.__memory[key] = item
+    if not _is_int(key):
+      _error("memory", "key " + str(key) + " must be type integer")
     else:
-      _error("memory", "memory cannot excede " + str(self.__length))
+      if key <= self.__length:
+        try:
+          self.__memory[key] = list(item)
+        except:
+          _error("memory", "load: bad value")
+      else:
+        _error("memory", "memory cannot excede " + str(self.__length))
 
   def __getitem__(self, key):
-    if key <= self.__length:
-      if key in self.__memory:
-        return self.__memory[key]
-      else:
-        self.__memory[key] = [0,0]
-        return [0,0]
+    if not _is_int(key):
+      _error("memory", "key " + str(key) + " must be type integer")
     else:
-      _error("memory", "memory cannot excede " + str(self.__length))
+      if key <= self.__length:
+        if key in self.__memory:
+         return self.__memory[key]
+        else:
+          self.__memory[key] = [0,0]
+          return [0,0]
+      else:
+        _error("memory", "memory cannot excede " + str(self.__length))
 
   def __len__(self):
     return self.__length
@@ -124,7 +133,7 @@ class emulator(object):
           print("\n\033[91mruntime error on line " + str(command[3]) + "\033[00m")
         except:
           pass
-        _error("memory leak", "value is too large for allocated space")
+        _error("exceed memory", "value is too large for allocated space")
       else:
         numzs = (command[2]-command[1]) - len(befornum)
         befornum = befornum + " "*numzs

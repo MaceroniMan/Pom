@@ -11,7 +11,7 @@ except:
   import pom.preprocesser as preprocesser
   import pom.examples as examples
 
-VERSION = "0.6"
+VERSION = "1.0"
 
 def _error(place, text):
   if os.name == 'nt':

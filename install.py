@@ -59,7 +59,5 @@ log("cleaning up...")
 os.remove(".pip_output")
 log("done\n")
 
-input()
-
 log("starting pom install...")
 install()

@@ -27,6 +27,9 @@ def _error(text, word, line, linet, start):
   sys.exit(1)
 
 def _is_int(string):
+  string = str(string)
+  if string in ["True", "False"]:
+    return False
   try:
     int(string)
     return True
