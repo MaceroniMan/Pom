@@ -155,7 +155,7 @@ Misc Commands:
 
 Simple Commands:
   sr [filename] ...................... Compile and run the filename
-  sh ................................. List this help menu""")
+  sh ................................. List the simple help menu""")
 
   if args.version != False:
     print("Pom Version " + VERSION)

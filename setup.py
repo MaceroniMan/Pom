@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
   name = "pom",
-  version = "0.6",
+  version = "1.0",
   author = "MaceroniMan",
   description = "A small compiled language that compiles to PomScript, a small homemade set of instruction that can also be used by itself as well.",
   url = "https://github.com/MaceroniMan/Pom",
   packages=['pom'],
   classifiers=[
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Topic :: Utilities",
     "Operating System :: OS Independent",
   ],

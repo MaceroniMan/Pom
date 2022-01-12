@@ -60,4 +60,7 @@ os.remove(".pip_output")
 log("done\n")
 
 log("starting pom install...")
-install()
+try:
+  install()
+except PermissionError:
+  log("failed to create exec, please run command with 'sudo'")
