@@ -11,7 +11,7 @@ except:
   import pom.preprocesser as preprocesser
   import pom.examples as examples
 
-VERSION = "1.0"
+VERSION = "1.1"
 
 def _error(place, text):
   if os.name == 'nt':
@@ -100,26 +100,21 @@ def compilet(itext, output, replaceargs):
     file.write(string)
 
 def shell():
-  string = ""
   while True:
     try:
       instr = input("...")
       if instr == ":run":
-        return string
+        return compiler._shell_compile()
       elif instr == ":ext":
         print("ShellExit")
         sys.exit()
-      elif instr == ":res":
-        string = ""
-        print("ShellReset")
-      elif instr == ":dmp":
-        compilet(string, "shelldump", {})
-        print("ShellDump")
-        sys.exit()
       else:
-        string += instr + "\n"
+        compiler._shell(instr)
     except KeyboardInterrupt:
       print("\nKeyboardInterrupt")
+    except EOFError:
+      print("\nShellExit")
+      sys.exit()
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(prog="pom", description="The Pom language compiler and runtime script", allow_abbrev=False, add_help=False)
@@ -177,11 +172,10 @@ Simple Commands:
 
   if len(sys.argv) == 1:
     print("Pom Shell v" + VERSION)
-    print("Type \":run\" to run the code, \":ext\" to exit the Shell and \":res\" to reset the Shell, \":dmp\" to compile the file to 'shelldump'")
+    print("Type \":run\" to run the code, \":ext\" or \"ctrl-d\" to exit the Shell")
     out = shell()
-    d = compiler.compile(out)
     m = application.memory()
-    m.load(d, autosize=True)
+    m.load(out, autosize=True)
     a = application.emulator(m)
     a.run()
   

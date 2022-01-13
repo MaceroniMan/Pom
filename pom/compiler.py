@@ -680,7 +680,10 @@ def _parse_line(line, linen):
       actions.append([1, 5])
       actions.append([3, var[0]])
       actions.append([3, var[1]])
-      actions.append([2, linen+1])
+      if type(linen) == str: # Only for the shell script
+        actions.append([2, linen])
+      else:
+        actions.append([2, linen+1])
   
   elif ctype == "type":
     var = variables[command[0]]
@@ -700,6 +703,60 @@ def _parse_line(line, linen):
       actions.append([3, item])
       actions.append([2, num])
       actions.append([3, item])
+
+def _shell(text): # This is the shell script
+  command = text.rstrip().split(" ")
+  if (len(text) - len(text.lstrip())) == len(text):
+    pass
+  elif (len(text) - len(text.lstrip())) >= 1:
+    error = True
+    for char in command[1:]:
+      if len(char) > 0:
+        if char[0] == "#":
+          error = False
+          break
+    if error:
+      _error("syntax error: cannot have leading whitespace on a command", (len(text) - len(text.lstrip()))*" ", 0, text, "")
+  elif command[0][0] == "#":
+    pass
+  elif command[0][0] == ">" and command[0][-1] == "<":
+    # implement warning
+    jumps[str(command[0][1:-1])] = len(actions)
+  else:
+    _parse_line(command, 0)
+
+def _shell_compile(): # This is to compile the shell
+  big_d = {}
+
+  count = 0
+  for item in values:
+    big_d[count] = item
+    count += 1
+
+  for item in variablel:
+    big_d[count] = item
+    count += 1
+
+  for item in actions:
+    if item[0] == 3:
+      big_d[count] = [2, item[1]+len(values)]
+    elif item[0] == 4:
+      big_d[count] = [2, item[1]+len(values)+len(variablel)]
+    elif item[0] == 5:
+      if not str(item[1]) in jumps:
+        _error("jump error: point '" + str(item[1]) + "' does not exist", item[2], item[3], item[4], item[5])
+      else:
+        big_d[count] = [2, int(jumps[str(item[1])])+len(values)+len(variablel)]
+    else:
+      big_d[count] = item
+    count += 1
+  
+  if len(actions) == 0:
+    big_d[count] = [1,0]
+  elif actions[-1] != [1,0]:
+    big_d[count] = [1,0]
+  
+  return big_d
 
 def compile(text):
   lines = text.split("\n")
