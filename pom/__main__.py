@@ -39,66 +39,63 @@ def webversion():
   else:
     print("Up to date")
 
-def runt(text):
-  listelems = []
-  elems = text.split("ec")
-  for elem in elems:
-    if elem == "":
-      continue
-    try:
-      typ = elem[0]
-      try:
-        com = int(elem[1:3])
-      except ValueError:
-        _error("runtime", "invalid pom file")
-      val = elem[3:]
-    except IndexError:
-      _error("runtime", "invalid pom file")
-    listelems.append([typ, com, val])
-
-  d = {}
-  count = 0
-  for item in listelems:
-    try:
-      if item[0] == "i":
-        d[count] = [int(item[1]), int(item[2])]
-      elif item[0] == "s":
-        d[count] = [int(item[1]), str(item[2])]
-      elif item[0] == "n":
-        d[count] = [int(item[1]), '']
-      count += 1
-    except ValueError:
-      _error("runtime", "invalid pom file")
-
-  m = application.memory()
-  m.load(d, autosize=True)
-  a = application.emulator(m)
-  a.run()
-
 def compilet(itext, output, replaceargs):
   itext = preprocesser.process(itext, replaceargs)
 
-  d = compiler.compile(itext)
-  string = ""
-  for item in d:
-    rstring = ""
-    l = d[item]
-    c = l[0]
-    if len(str(c)) == 1:
-      c = "0" + str(c)
-    if str(l[1]) == "":
-      rstring += "n" + str(c) + "0"
+  dictionary = compiler.compile(itext)
+  byte_arr = []
+  for num in dictionary:
+    item = dictionary[num]
+    byte_arr.append(ord(str(item[0])))
+    if item[1] == "":
+      byte_arr.append(254)
     else:
-      if type(l[1]) == int:
-        rstring += "i"
-      elif type(l[1]) == str:
-        rstring += "s"
-      rstring += str(c) + str(l[1])
-    string += rstring + "ec"
+      if type(item[1]) == str:
+        byte_arr.append(253)
+      else:
+        byte_arr.append(252)
+      for char in str(item[1]):
+        byte_arr.append(ord(str(char)))
+    byte_arr.append(255)
+    
+  with open(output, 'w+b') as file:
+    file.write(bytearray(byte_arr))
 
-  with open(output, 'w') as file:
-    file.write(string)
+def runt(filename):
+  dictionary = {}
+  with open('my_file', 'r+b') as file:
+    byte_arr = list(file.read())
+    second = ''
+    first = ''
+    number = 0
+    vtype = ''
+    for entry in byte_arr:
+      if entry == 255:
+        if vtype == "string":
+          dictionary[number] = [first, str(second)]
+        elif vtype == "number":
+          dictionary[number] = [first, int(second)]
+        number += 1
+        first = ''
+        second = ''
+      else:
+        if first == '':
+          first = int(chr(entry))
+        elif entry == 254:
+          second += ''
+          vtype = "string"
+        elif entry == 253:
+          vtype = "string"
+        elif entry == 252:
+          vtype = "number"
+        else:
+          second += chr(entry)
 
+  m = application.memory()
+  m.load(dictionary, autosize=True)
+  a = application.emulator(m)
+  a.run()
+  
 def shell():
   while True:
     try:
@@ -197,11 +194,10 @@ Simple Commands:
   
   if args.run != None:
     try:
-      with open(args.run, 'r') as file:
-        text = file.read()
+      open(args.run).close()
     except:
       parser.error('\"' + args.run + '\" file not found')
-    runt(text)
+    runt(args.run)
   
   if args.pom_code != None:
     try:

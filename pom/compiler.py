@@ -77,7 +77,7 @@ def _parse_line(line, linen):
   mlength = 0
   
   if line[-1][-1] == ";":
-    _error("syntax error: cannot have semi-colons at the end of a line", line[0].split(":")[1], linen, " ".join(line), " ".join(line))
+    _error("syntax error: cannot have semi-colons at the end of a line", ";", linen, " ".join(line), " ".join(line))
 
   if line[0] == "@if":
     ctype = "if"
