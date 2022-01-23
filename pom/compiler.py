@@ -534,6 +534,8 @@ def _parse_line(line, linen):
       if command[1] == "~":
         _error("syntax error: cannot auto-set a blank variable", text, linen, " ".join(line), assemble)
       joinv = ""
+    elif len(command) == 2:
+      _error("syntax error: must defign a variable with a name", assemble, linen, " ".join(line), assemble)
     elif command[0] == "int":
       joinv = str(command[3])
     else:

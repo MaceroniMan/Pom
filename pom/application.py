@@ -149,7 +149,10 @@ class emulator(object):
       addnum = ""
       for item in range(command[1], command[2]):
         addnum += str(self.memory[item][1])
-      self.registers["math1"][command[3]] = float(addnum)
+      if _is_int(addnum):
+        self.registers["math1"][command[3]] = float(addnum)
+      else:
+        _error("type error", "value \"" + str(addnum) + "\" cannot be used in register")
     elif command[0] == 7:
       if command[1] == "+":
         self.registers["math1"][2] = _strip(round(self.registers["math1"][0] + self.registers["math1"][1], 1))

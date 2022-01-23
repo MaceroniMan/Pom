@@ -11,7 +11,7 @@ except:
   import pom.preprocesser as preprocesser
   import pom.examples as examples
 
-VERSION = "1.1"
+VERSION = "1.2"
 
 def _error(place, text):
   if os.name == 'nt':
@@ -63,7 +63,7 @@ def compilet(itext, output, replaceargs):
 
 def runt(filename):
   dictionary = {}
-  with open('my_file', 'r+b') as file:
+  with open(filename, 'r+b') as file:
     byte_arr = list(file.read())
     second = ''
     first = ''
@@ -178,7 +178,7 @@ Simple Commands:
   
   if args.replace != None:
     if args.compile == None:
-      parser.error('-rp / --replace can only be used with -c / --compile')
+      parser.error('-r / --replace can only be used with -c / --compile')
     for i in args.replace:
       if i[0] in replaceargs:
         print("warning: key \"" + i[0] +  "\" already exists")
@@ -190,6 +190,7 @@ Simple Commands:
         text = file.read()
     except:
       parser.error('\"' + args.compile[0] + '\" file not found')
+
     compilet(text, args.compile[1], replaceargs)
   
   if args.run != None:

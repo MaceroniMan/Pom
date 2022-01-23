@@ -38,7 +38,10 @@ def process(text, replaceArgs):
       if char in alphabets:
         pass
       else:
-        print("\033[1;91mpreproc error: replace argument '" + item + "' contains non-alphabet charecters\033[00m")
+        if os.name == "nt":
+          print("preproc error: replace argument '" + item + "' contains non-alphanumeric charecters")
+        else:
+          print("\033[1;91mpreproc error: replace argument '" + item + "' contains non-alphanumeric charecters\033[00m")
         sys.exit(1)
   p = re.compile("({{\s*(?P<word>\w+)\s*}})")
   matches = p.finditer(text)
