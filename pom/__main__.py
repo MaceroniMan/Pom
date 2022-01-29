@@ -11,7 +11,7 @@ except:
   import pom.preprocesser as preprocesser
   import pom.examples as examples
 
-VERSION = "1.2"
+VERSION = "1.3"
 
 def _error(place, text):
   if os.name == 'nt':
@@ -27,7 +27,7 @@ def webversion():
       html = response.read().decode("ascii")
       lines = html.split("\n")
       for line in lines:
-        if line.startswith("> Version"):
+        if line.startswith("# Version"):
           version = line.split(" ")[2]
         else:
           pass
