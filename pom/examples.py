@@ -11,7 +11,7 @@ int:3 l # defign a new variable
 
 l < count + 1 # add 1 to that variable
 
-@print < l < "\\n" # print the current count variable as well as a newline afterwards.
+@print < l < "\\\n" # print the current count variable as well as a newline afterwards.
 
 count < count + 1 # increment the count variable
 
@@ -52,13 +52,13 @@ string:5 num2 # Make a new blank string variable
 @print < "Number One: " # print out the input prompt
 @input < num1 # get input and put it in the num1 variable
 
-@print < "\nChoose the method: *,-,+,/ " # print out the input prompt
+@print < "\\nChoose the method: *,-,+,/ " # print out the input prompt
 @input < sign # get input and put it in the num1 variable
 
 @print < "Number Two: " # print out the input prompt
 @input < num2 # get input and put it in the num1 variable
 
-@print < "\n" < num1 < sign < num2 # Print out three variables back-to-back
+@print < "\\n" < num1 < sign < num2 # Print out three variables back-to-back
 
 @type num1 < :int # Change the type of variable
 @type num2 < :int # Change the type of variable
@@ -85,7 +85,7 @@ end < num1 / num2 # Divides the two numbers
 @jump < "end" # Jump past the error
 
 >err< # Make a new jump point
-@print < "\n" < sign < " is an invalid sign" # Print the error message
+@print < "\\n" < sign < " is an invalid sign" # Print the error message
 @exit # Exit the program
 
 >end< # Make a new jump point

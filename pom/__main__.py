@@ -11,7 +11,7 @@ except:
   import pom.preprocesser as preprocesser
   import pom.examples as examples
 
-VERSION = "1.3"
+VERSION = "1.4"
 
 def _error(place, text):
   if os.name == 'nt':
@@ -143,11 +143,7 @@ Misc Commands:
   -h / --help ........................ List this help menu and exit
   -v / --version ..................... List the current Pom version
   -ex / --example .................... List the Pom examples
-  -ex / --example [name] ............. Copy the example to the current directory
-
-Simple Commands:
-  sr [filename] ...................... Compile and run the filename
-  sh ................................. List the simple help menu""")
+  -ex / --example [name] ............. Copy the example to the current directory""")
 
   if args.version != False:
     print("Pom Version " + VERSION)
