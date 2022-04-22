@@ -68,12 +68,12 @@ def mkdirs(paths):
 
 # start script here:
 
-t = download("https://raw.githubusercontent.com/MaceroniMan/Pom/master/install.py", None, "Getting File List...")
+t = download("https://raw.githubusercontent.com/MaceroniMan/Pom/master/installfiles.txt", None, "Getting File List...")
 
 allfiles = t.decode("utf-8").split("\n")
 
 for line in range(len(allfiles)):
   mkdirs(os.path.join(os.getcwd(), allfiles[line]))
-  download("https://raw.githubusercontent.com/MaceroniMan/Pom/master" + allfiles[line], allfiles[line], str(line) + " of " + str(len(allfiles)))
+  download("https://raw.githubusercontent.com/MaceroniMan/Pom/master/" + allfiles[line], os.path.join(os.getcwd(), allfiles[line]), str(line) + " of " + str(len(allfiles)))
 
 subprocess.run([sys.executable, "install.py"])
