@@ -6,6 +6,8 @@ values = []
 actions = []
 jumps = {}
 
+warnings = 0
+
 alphabets = string.ascii_lowercase + string.ascii_lowercase.upper() + "1234567890_"
 ops = {"==":1,"!=":2,"<<":3,">>":4,"<=":5,">=":6}
 maths = ["+", "-", "*", "/"]
@@ -26,6 +28,21 @@ def _error(text, word, line, linet, start):
   print()
   sys.exit(1)
 
+def _logmsg(text, color='green'):
+  global warnings
+  if os.name == "nt":
+    if color == "green":
+      print("log: " + text)
+    elif color == "yellow":
+      print("warning: " + text)
+      warnings += 1
+  else:
+    if color == "green":
+      print("\033[1;32mlog: " + text + "\033[00m")
+    elif color == "yellow":
+      print("\033[1;33mwarning: " + text + "\033[00m")
+      warnings += 1
+    
 def _is_int(string):
   string = str(string)
   if string in ["True", "False"]:
@@ -722,8 +739,10 @@ def _shell(text): # This is the shell script
   elif command[0][0] == "#":
     pass
   elif command[0][0] == ">" and command[0][-1] == "<":
-    # implement warning
-    jumps[str(command[0][1:-1])] = len(actions)
+    jvalue = str(command[0][1:-1])
+    if jvalue in jumps:
+      _logmsg("line 0: jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
+    jumps[jvalue] = [len(actions), 0]
   else:
     _parse_line(command, 0)
 
@@ -748,7 +767,7 @@ def _shell_compile(): # This is to compile the shell
       if not str(item[1]) in jumps:
         _error("jump error: point '" + str(item[1]) + "' does not exist", item[2], item[3], item[4], item[5])
       else:
-        big_d[count] = [2, int(jumps[str(item[1])])+len(values)+len(variablel)]
+        big_d[count] = [2, int(jumps[str(item[1])][0])+len(values)+len(variablel)]
     else:
       big_d[count] = item
     count += 1
@@ -778,8 +797,10 @@ def compile(text):
     elif command[0][0] == "#":
       pass
     elif command[0][0] == ">" and command[0][-1] == "<":
-      # implement warning
-      jumps[str(command[0][1:-1])] = len(actions)
+      jvalue = str(command[0][1:-1])
+      if jvalue in jumps:
+        _logmsg("line " + str(line+1) + ": jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
+      jumps[jvalue] = [len(actions), line+1]
     else:
       _parse_line(command, line)
   
@@ -803,7 +824,7 @@ def compile(text):
       if not str(item[1]) in jumps:
         _error("jump error: point '" + str(item[1]) + "' does not exist", item[2], item[3], item[4], item[5])
       else:
-        big_d[count] = [2, int(jumps[str(item[1])])+len(values)+len(variablel)]
+        big_d[count] = [2, int(jumps[str(item[1])][0])+len(values)+len(variablel)]
     else:
       big_d[count] = item
     count += 1
@@ -813,4 +834,4 @@ def compile(text):
   elif actions[-1] != [1,0]:
     big_d[count] = [1,0]
   
-  return big_d
+  return big_d, warnings

@@ -42,7 +42,7 @@ def webversion():
 def compilet(itext, output, replaceargs):
   itext = preprocesser.process(itext, replaceargs)
 
-  dictionary = compiler.compile(itext)
+  dictionary, warnings = compiler.compile(itext)
   byte_arr = []
   for num in dictionary:
     item = dictionary[num]
@@ -61,6 +61,8 @@ def compilet(itext, output, replaceargs):
   with open(output, 'w+b') as file:
     file.write(bytearray(byte_arr))
 
+  print("\033[1;32mcompiler finished with " + str(warnings) + " warning" + "s"*((warnings!=1)*1) + ", output executable in '" + output +"'\033[00m")
+  
 def runt(filename):
   dictionary = {}
   with open(filename, 'r+b') as file:
