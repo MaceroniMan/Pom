@@ -1,7 +1,7 @@
 install.py
 setup.py
 pom/__init__.py
-pom/__main.py
+pom/__main__.py
 pom/application.py
 pom/compiler.py
 pom/examples.py

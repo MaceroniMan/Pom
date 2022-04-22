@@ -27,7 +27,7 @@ def download(url, filelocation, customtext=""):
 
   if length:
     length = int(length)
-    blocksize = max(4096, length // round(os.get_terminal_size().columns / 2))
+    blocksize = max(4096, length // round(os.get_terminal_size().columns / 4))
   else:
     blocksize = 1000000
     print("cannot get total size, no loading bar present", end="")
@@ -43,7 +43,7 @@ def download(url, filelocation, customtext=""):
 
     if length:
       percent = float(size / length)
-      width = round(os.get_terminal_size().columns / 2)
+      width = round(os.get_terminal_size().columns / 4)
       
       sys.stdout.write("\r[" + "#"*(round(percent*width)) + " "*round(width-(percent*width)) + "] " + __dobytes(size, ending=False) + "/" + __dobytes(length) + " " + customtext)
       sys.stdout.flush()
@@ -66,14 +66,17 @@ def mkdirs(paths):
   except:
     pass
 
-# start script here:
+# start script here
 
-t = download("https://raw.githubusercontent.com/MaceroniMan/Pom/master/installfiles.txt", None, "Getting File List...")
+print("Downloading Metadata...")
+t = download("https://raw.githubusercontent.com/MaceroniMan/Pom/master/installfiles.txt", None)
 
 allfiles = t.decode("utf-8").split("\n")
 
+print("Downloading Core Files...")
+
 for line in range(len(allfiles)):
   mkdirs(os.path.join(os.getcwd(), allfiles[line]))
-  download("https://raw.githubusercontent.com/MaceroniMan/Pom/master/" + allfiles[line], os.path.join(os.getcwd(), allfiles[line]), str(line) + " of " + str(len(allfiles)))
+  download("https://raw.githubusercontent.com/MaceroniMan/Pom/master/" + allfiles[line], os.path.join(os.getcwd(), allfiles[line]))
 
 subprocess.run([sys.executable, "install.py"])
