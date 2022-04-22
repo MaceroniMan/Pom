@@ -1,0 +1,10 @@
+/install.py
+/setup.py
+/pom/__init__.py
+/pom/__main.py
+/pom/application.py
+/pom/compiler.py
+/pom/examples.py
+/pom/preprocesser.py
+/installer/pom.bat
+/installer/pom.sh
