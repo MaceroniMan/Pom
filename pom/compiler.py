@@ -55,13 +55,19 @@ def _is_int(string):
 
 def _get_type(string):
   string = str(string)
-  if string[0] == "\"":
-    if string == "\"":
+  quotetext = string.replace("\\\"", "__internalquote__")
+  if quotetext[0] == "\"":
+    if quotetext == "\"":
       return "starts"
-    elif string[-1] == "\"":
-      return "string"
+    elif quotetext[-1] == "\"":
+      if "\"" in quotetext[1:-1]:
+        return "_e_notvar"
+      else:
+        return "string"
     else:
       return "starts"
+  elif quotetext[-1] == "\"":
+    return "_e_notvar"
   elif _is_int(string):
     return "int"
   elif string in variables:
@@ -170,12 +176,21 @@ def _parse_line(line, linen):
         break
     assemble += " " + nline[item]
     text = nline[item]
+    
     if ctype == "func":
-      if rstring:
-        if text[-1] == "\"":
-          rstring_t += " " + text[:-1]
-          command.append(rstring_t)
-          rstring = False
+      if rstring: ## work here
+        quotetext = text.replace("\\\"", "__internalquote__")
+        text = text.replace("\\\"", "\"")
+        if "\"" in quotetext:
+          if quotetext[:-1] == "\"":
+            rstring_t += " " + text[:-1]
+            command.append(rstring_t)
+            rstring = False
+          else:
+            indexofquote = quotetext.find("\"")
+            offset = quotetext[:indexofquote+1].count("__internalquote__")
+            finaloffset = indexofquote - ((offset*17)-(offset*2))
+            _error("syntax error: invalid end-quote position", "^", linen, " ".join(line), "^"*((len(assemble)-len(text)+finaloffset+1)))
         else:
           rstring_t += " " + text
       elif text == "<":
@@ -189,6 +204,7 @@ def _parse_line(line, linen):
           next_r = True
       elif next_r:
         gtype = _get_type(text)
+        text = text.replace("\\\"", "\"")
         if gtype == "string":
           command.append(text[1:-1])
         elif gtype == "int":
@@ -201,7 +217,10 @@ def _parse_line(line, linen):
             _error("value error: cannot use variable for jump function", text, linen, " ".join(line), assemble)
           else:
             command.append(variables[text])
+        elif gtype == "_e_notvar":
+          _error("type error: invalid value type", text, linen, " ".join(line), assemble)
         else:
+          print(gtype)
           if command[0] == "jump":
             _error("value error: cannot use variable for jump function", text, linen, " ".join(line), assemble)
           else:
@@ -209,12 +228,21 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
+        
     elif ctype == "if":
-      if rstring:
-        if text[-1] == "\"":
-          rstring_t += " " + text[:-1]
-          command.append(rstring_t)
-          rstring = False
+      if rstring: ## work here
+        quotetext = text.replace("\\\"", "__internalquote__")
+        text = text.replace("\\\"", "\"")
+        if "\"" in quotetext:
+          if quotetext[:-1] == "\"":
+            rstring_t += " " + text[:-1]
+            command.append(rstring_t)
+            rstring = False
+          else:
+            indexofquote = quotetext.find("\"")
+            offset = quotetext[:indexofquote+1].count("__internalquote__")
+            finaloffset = indexofquote - ((offset*17)-(offset*2))
+            _error("syntax error: invalid end-quote position", "^", linen, " ".join(line), "^"*((len(assemble)-len(text)+finaloffset+1)))
         else:
           rstring_t += " " + text
       elif text == "<":
@@ -229,6 +257,7 @@ def _parse_line(line, linen):
           _error("forward error: cannot forward a value before conditional is over", text, linen, " ".join(line), assemble)
       elif len(command) < 3 or next_r:
         gtype = _get_type(text)
+        text = text.replace("\\\"", "\"")
         if gtype == "string":
           if intcompare and not next_r:
             _error("type error: operator type does not match value type", text, linen, " ".join(line), assemble)
@@ -272,23 +301,33 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
+        
     elif ctype == "variable":
-      if rstring:
-        if text[-1] == "\"":
-          rstring_t += " " + text[:-1]
-          if command[1] == "~":
-            command.append(rstring_t)
-          else:
-            if len(rstring_t) > command[1]:
-              _error("value error: added value is too long", text, linen, " ".join(line), assemble)
-            else:
+      if rstring: ## work here
+        quotetext = text.replace("\\\"", "__internalquote__")
+        text = text.replace("\\\"", "\"")
+        if "\"" in quotetext:
+          if quotetext[-1] == "\"":
+            rstring_t += " " + text[:-1]
+            if command[1] == "~":
               command.append(rstring_t)
-          rstring = False
+            else:
+              if len(rstring_t) > command[1]:
+                _error("value error: string limit reached", text, linen, " ".join(line), assemble)
+              else:
+                command.append(rstring_t)
+            rstring = False
+          else:
+            indexofquote = quotetext.find("\"")
+            offset = quotetext[:indexofquote+1].count("__internalquote__")
+            finaloffset = indexofquote - ((offset*17)-(offset*2))
+            _error("syntax error: invalid end-quote position", "^", linen, " ".join(line), "^"*((len(assemble)-len(text)+finaloffset+1)))
         else:
           rstring_t += " " + text
           if not command[1] == "~":
             if len(rstring_t) > command[1]:
               _error("value error: value is too long", text, linen, " ".join(line), assemble)
+              
       elif text == "<":
         if value == False:
           _error("name error: name cannot be a forward", text, linen, " ".join(line), assemble)
@@ -299,6 +338,7 @@ def _parse_line(line, linen):
             next_r = True
       elif next_r:
         gtype = _get_type(text)
+        text = text.replace("\\\"", "\"")
         if (gtype == "starts" and command[0] == "string") or command[0] == gtype:
           if gtype == "string":
             if command[1] == "~":
@@ -347,21 +387,31 @@ def _parse_line(line, linen):
           _error("syntax error: must use a variable type", text, linen, " ".join(line), assemble)
       else:
         _error("syntax error: must forward value", text, linen, " ".join(line), assemble)
+        
     elif ctype == "reset":
       var = variables[command[0]]
       if rstring:
-        if text[-1] == "\"":
-          rstring_t += " " + text[:-1]
-          if len(rstring_t) > mlength:
-            _error("value error: value is too long", text, linen, " ".join(line), assemble)
+        quotetext = text.replace("\\\"", "__internalquote__")
+        text = text.replace("\\\"", "\"")
+        if "\"" in quotetext:
+          if quotetext[-1] == "\"" and quotetext.count("\"") == 1:
+            rstring_t += " " + text[:-1]
+            if len(rstring_t) > mlength:
+              _error("value error: string limit reached", text, linen, " ".join(line), " ".join(line))
+            else:
+              mlength -= len(rstring_t)
+              command.append(rstring_t)
+            rstring = False
           else:
-            mlength -= len(rstring_t)
-            command.append(rstring_t)
-          rstring = False
+            indexofquote = quotetext.find("\"")
+            offset = quotetext[:indexofquote+1].count("__internalquote__")
+            finaloffset = indexofquote - ((offset*17)-(offset*2))
+            _error("syntax error: invalid end-quote position", "^", linen, " ".join(line), "^"*((len(assemble)-len(text)+finaloffset+1)))
         else:
           rstring_t += " " + text
           if len(rstring_t) > mlength:
-            _error("value error: value is too long", text, linen, " ".join(line), assemble)
+            _error("value error: string limit reached", text, linen, " ".join(line), assemble)
+
       elif text == "<":
         if next_r == True:
           _error("forward error: can only forward once", text, linen, " ".join(line), assemble)
@@ -369,8 +419,12 @@ def _parse_line(line, linen):
           next_r = True
       elif next_r:
         gtype = _get_type(text)
-        if gtype != 'var':
-          if gtype != var[2]:
+        text = text.replace("\\\"", "\"")
+        if gtype != "var":
+          if gtype == "starts":
+            if var[2] != "string":
+              _error("type error: type declaration does not match value type", " ".join(nline[item:]), linen, " ".join(line), " ".join(line))
+          elif gtype != var[2]:
             _error("type error: type declaration does not match value type", text, linen, " ".join(line), assemble)
         if gtype == "string":
           if len(text[1:-1]) > mlength:
@@ -404,6 +458,7 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("syntax error: must forward value", text, linen, " ".join(line), assemble)
+        
     elif ctype == "type":
       if text == "<":
         if value == False:
@@ -435,6 +490,7 @@ def _parse_line(line, linen):
           _error("syntax error: must use a variable type", text, linen, " ".join(line), assemble)
       else:
         _error("syntax error: must forward a internals type", text, linen, " ".join(line), assemble)
+        
     elif ctype == "math":
       var = variables[command[0]]
       if text == "<":
@@ -524,6 +580,8 @@ def _parse_line(line, linen):
             actions.append([2, count+start])
             count += 1
     elif command[0] == "input":
+      if len(command) != 2:
+        _error("forward error: must forward a value", line[0], linen, " ".join(line), assemble)
       if type(command[1]) == list:
         if command[1][2] == "string":
           actions.append([1, 10])
