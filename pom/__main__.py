@@ -1,4 +1,4 @@
-import argparse, sys, json, os
+import argparse, sys, json
 import urllib.request
 try:
   import application
@@ -12,13 +12,6 @@ except:
   import pom.examples as examples
 
 VERSION = "1.4"
-
-def _error(place, text):
-  if os.name == 'nt':
-    print("error: " + place + ": " + text)
-  else:
-    print("\033[91merror: " + place + ": " + text + "\033[00m")
-  sys.exit(0)
 
 def webversion():
   version = None
@@ -61,7 +54,7 @@ def compilet(itext, output, replaceargs):
   with open(output, 'w+b') as file:
     file.write(bytearray(byte_arr))
 
-  print("\033[1;32mcompiler finished with " + str(warnings) + " warning" + "s"*((warnings!=1)*1) + ", output executable in '" + output +"'\033[00m")
+  print("\033[0;32mcompiler finished with " + str(warnings) + " warning" + "s"*((warnings!=1)*1) + ", output executable in '" + output +"'\033[00m")
   
 def runt(filename):
   dictionary = {}

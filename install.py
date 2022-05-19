@@ -63,4 +63,4 @@ log("starting pom install...")
 try:
   install()
 except PermissionError:
-  log("failed to create exec, please run command with 'sudo'")
+  log("failed to create executable, please run command with 'sudo'")

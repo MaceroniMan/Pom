@@ -4,7 +4,7 @@ def _error(place, text):
   if os.name == 'nt':
     print("error: " + place + ": " + text)
   else:
-    print("\n\033[91merror: " + place + ": " + text + "\033[00m")
+    print("\n\033[0;91merror: " + place + ": " + text + "\033[00m")
   sys.exit(0)
 
 def _is_int(string):

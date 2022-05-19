@@ -11,9 +11,9 @@ def _error(text, word, line, linet, start):
     print(linet)
     print(((len(start))-len(word))*" " + (len(word))*"^")
   else:
-    print("\033[1;91m" + text[0] + " on line " + str(line+1) + ":" + ":".join(text[1:]))
+    print("\033[0;91m" + text[0] + " on line " + str(line+1) + ":" + ":".join(text[1:]))
     print("\033[00m" + linet)
-    print(((len(start))-len(word))*" " + "\033[1;32m" + (len(word))*"^" + "\033[00m")
+    print(((len(start))-len(word))*" " + "\033[0;32m" + (len(word))*"^" + "\033[00m")
   print()
   sys.exit(1)
 

@@ -22,9 +22,9 @@ def _error(text, word, line, linet, start):
     print(linet)
     print(((len(start))-len(word))*" " + (len(word))*"^")
   else:
-    print("\033[1;91m" + text[0] + " on line " + str(line+1) + ":" + ":".join(text[1:]))
+    print("\033[0;91m" + text[0] + " on line " + str(line+1) + ":" + ":".join(text[1:]))
     print("\033[00m" + linet)
-    print(((len(start))-len(word))*" " + "\033[1;32m" + (len(word))*"^" + "\033[00m")
+    print(((len(start))-len(word))*" " + "\033[0;32m" + (len(word))*"^" + "\033[00m")
   print()
   sys.exit(1)
 
@@ -38,9 +38,9 @@ def _logmsg(text, color='green'):
       warnings += 1
   else:
     if color == "green":
-      print("\033[1;32mlog: " + text + "\033[00m")
+      print("\033[0;32mlog: " + text + "\033[00m")
     elif color == "yellow":
-      print("\033[1;33mwarning: " + text + "\033[00m")
+      print("\033[0;33mwarning: " + text + "\033[00m")
       warnings += 1
     
 def _is_int(string):
