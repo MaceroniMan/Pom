@@ -1,4 +1,5 @@
-import sys, os
+import os
+import sys
 
 def _error(place, text):
   if os.name == 'nt':

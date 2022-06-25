@@ -1,4 +1,6 @@
-import sys, string, os
+import os
+import sys
+import string
 
 variables = {}
 variablel = []
@@ -86,9 +88,7 @@ def _get_type(string):
   else:
     bad = False
     for char in string:
-      if char in alphabets:
-        pass
-      else:
+      if not char in alphabets:
         bad = True
     if bad:
       return "_e_notvar"
@@ -781,28 +781,26 @@ def _parse_line(line, linen):
       actions.append([2, num])
       actions.append([3, item])
 
-def _shell(text): # This is the shell script
+def _shell(text): # this is the shell script
   command = text.rstrip().split(" ")
-  if (len(text) - len(text.lstrip())) == len(text):
-    pass
-  elif (len(text) - len(text.lstrip())) >= 1:
-    error = True
-    for char in command[1:]:
-      if len(char) > 0:
-        if char[0] == "#":
-          error = False
-          break
-    if error:
-      _error("syntax error: cannot have leading whitespace on a command", (len(text) - len(text.lstrip()))*" ", 0, text, "")
-  elif command[0][0] == "#":
-    pass
-  elif command[0][0] == ">" and command[0][-1] == "<":
-    jvalue = str(command[0][1:-1])
-    if jvalue in jumps:
-      _logmsg("line 0: jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
-    jumps[jvalue] = [len(actions), 0]
-  else:
-    _parse_line(command, 0)
+  if command[0][0] != "#": # for commented out lines
+    if (len(text) - len(text.lstrip())) != len(text): # check to see if the line is blank
+      if (len(text) - len(text.lstrip())) >= 1:
+        error = True
+        for char in command[1:]:
+          if len(char) > 0:
+            if char[0] == "#":
+              error = False
+              break
+        if error:
+          _error("syntax error: cannot have leading whitespace on a command", (len(text) - len(text.lstrip()))*" ", 0, text, "")
+      elif command[0][0] == ">" and command[0][-1] == "<":
+        jvalue = str(command[0][1:-1])
+        if jvalue in jumps:
+          _logmsg("line 0: jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
+        jumps[jvalue] = [len(actions), 0]
+      else:
+        _parse_line(command, 0)
 
 def _shell_compile(): # This is to compile the shell
   big_d = {}
@@ -841,26 +839,24 @@ def compile(text):
   lines = text.split("\n")
   for line in range(len(lines)):
     command = lines[line].rstrip().split(" ")
-    if (len(lines[line]) - len(lines[line].lstrip())) == len(lines[line]):
-      pass
-    elif (len(lines[line]) - len(lines[line].lstrip())) >= 1:
-      error = True
-      for char in command[1:]:
-        if len(char) > 0:
-          if char[0] == "#":
-            error = False
-            break
-      if error:
-        _error("syntax error: cannot have leading whitespace on a command", (len(lines[line]) - len(lines[line].lstrip()))*" ", line, lines[line], "")
-    elif command[0][0] == "#":
-      pass
-    elif command[0][0] == ">" and command[0][-1] == "<":
-      jvalue = str(command[0][1:-1])
-      if jvalue in jumps:
-        _logmsg("line " + str(line+1) + ": jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
-      jumps[jvalue] = [len(actions), line+1]
-    else:
-      _parse_line(command, line)
+    if command[0][0] != "#": # for commented out lines
+      if (len(lines[line]) - len(lines[line].lstrip())) != len(lines[line]): # check to see if the line is blank
+        if (len(lines[line]) - len(lines[line].lstrip())) >= 1:
+          error = True
+          for char in command[1:]:
+            if len(char) > 0:
+              if char[0] == "#":
+                error = False
+                break
+          if error:
+            _error("syntax error: cannot have leading whitespace on a command", (len(lines[line]) - len(lines[line].lstrip()))*" ", line, lines[line], "")
+        elif command[0][0] == ">" and command[0][-1] == "<":
+          jvalue = str(command[0][1:-1])
+          if jvalue in jumps:
+            _logmsg("line " + str(line+1) + ": jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
+          jumps[jvalue] = [len(actions), line+1]
+        else:
+          _parse_line(command, line)
   
   big_d = {}
 

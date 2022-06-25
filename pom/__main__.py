@@ -1,4 +1,6 @@
-import argparse, sys, json
+import sys
+import json
+import argparse
 import urllib.request
 try:
   import application
@@ -22,8 +24,6 @@ def webversion():
       for line in lines:
         if line.startswith("# Version"):
           version = line.split(" ")[2]
-        else:
-          pass
   except:
     print("Failed to check version")
     return

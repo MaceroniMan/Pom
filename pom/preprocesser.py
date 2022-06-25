@@ -35,9 +35,7 @@ def _getline(text, char):
 def process(text, replaceArgs):
   for item in replaceArgs:
     for char in item:
-      if char in alphabets:
-        pass
-      else:
+      if not char in alphabets:
         if os.name == "nt":
           print("preproc error: replace argument '" + item + "' contains non-alphanumeric charecters")
         else:
