@@ -783,8 +783,8 @@ def _parse_line(line, linen):
 
 def _shell(text): # this is the shell script
   command = text.rstrip().split(" ")
-  if command[0][0] != "#": # for commented out lines
-    if (len(text) - len(text.lstrip())) != len(text): # check to see if the line is blank
+  if (len(text) - len(text.lstrip())) != len(text): # check to see if the line is blank
+    if command[0][0] != "#": # for commented out lines
       if (len(text) - len(text.lstrip())) >= 1:
         error = True
         for char in command[1:]:
@@ -802,7 +802,7 @@ def _shell(text): # this is the shell script
       else:
         _parse_line(command, 0)
 
-def _shell_compile(): # This is to compile the shell
+def _shell_compile(): # this is to compile the shell
   big_d = {}
 
   count = 0
@@ -839,8 +839,8 @@ def compile(text):
   lines = text.split("\n")
   for line in range(len(lines)):
     command = lines[line].rstrip().split(" ")
-    if command[0][0] != "#": # for commented out lines
-      if (len(lines[line]) - len(lines[line].lstrip())) != len(lines[line]): # check to see if the line is blank
+    if (len(lines[line]) - len(lines[line].lstrip())) != len(lines[line]): # check to see if the line is blank
+      if command[0][0] != "#": # for commented out lines
         if (len(lines[line]) - len(lines[line].lstrip())) >= 1:
           error = True
           for char in command[1:]:

@@ -1,0 +1,22 @@
+int:3 count < 0 # init 'int' type variable with the value of 0
+
+
+>jump1< # defign a jump point
+
+int:3 l # defign a new variable
+
+
+%if count == 20 < "break" # if count is 20 then continue, otherwise jump to point                                 'break'
+
+l < count + 1 # add 1 to that variable
+
+@print < l < "\n" # print the current count variable as well as a newline afterwards.
+
+count < count + 1 # increment the count variable
+
+@jump < "jump1" # jump to point 'jump1'
+
+
+>break< # defign a new jump point
+
+@exit # exit the program

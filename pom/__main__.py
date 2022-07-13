@@ -6,12 +6,10 @@ try:
   import application
   import compiler
   import preprocesser
-  import examples
 except:
   import pom.application as application
   import pom.compiler as compiler
   import pom.preprocesser as preprocesser
-  import pom.examples as examples
 
 VERSION = "1.4"
 
@@ -117,14 +115,13 @@ if __name__ == "__main__":
   group.add_argument('-pc', '--pom_code',  nargs=1, action='store', metavar=('file'), help="Run a PomCode JSON file")
   group.add_argument('-h', '--help', action='store_true', help="List this help menu and exit")
   group.add_argument('-v', '--version', action='store_true', help="List the current Pom version")
-  group.add_argument('-ex', '--example', nargs='?', const=True, action='store', metavar=('name'), help="List the examples or write an example to the current dir")
   parser.add_argument('-r', '--replace', nargs=2, metavar=('variable', 'value'), action="append", help="Add a preprocesser replace item, only used with -c / --compile")
 
   args = parser.parse_args()
   replaceargs = {}
 
   if args.help != False:
-    print("""usage: pom [run] [-h] [-v] [-c input output] [-pc file] [-r variable value] [-ex [name]]
+    print("""usage: pom [run] [-h] [-v] [-c input output] [-pc file] [-r variable value]
 
 PomCode Commands:
   -pc / --pom_code [file] ............ Run a PomCode JSON file
@@ -136,27 +133,11 @@ Pom Commands:
 
 Misc Commands:
   -h / --help ........................ List this help menu and exit
-  -v / --version ..................... List the current Pom version
-  -ex / --example .................... List the Pom examples
-  -ex / --example [name] ............. Copy the example to the current directory""")
+  -v / --version ..................... List the current Pom version""")
 
   if args.version != False:
     print("Pom Version " + VERSION)
     webversion()
-
-  if args.example != None:
-    if args.example == True:
-      print("Example Name : Example Description")
-      print("==================================")
-      for item in examples.listexamples():
-        print(item + " - " + examples.getdec(item))
-    else:
-      if args.example in examples.listexamples():
-        with open(args.example + ".poml", "w") as writefile:
-          writefile.write(examples.getexample(args.example))
-        print("File \'" + args.example + ".poml\' copied")
-      else:
-        parser.error('\"' + args.example + '\" example does not exist')
 
   if len(sys.argv) == 1:
     print("Pom Shell v" + VERSION)
