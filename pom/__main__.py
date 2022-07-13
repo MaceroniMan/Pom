@@ -11,7 +11,7 @@ except:
   import pom.compiler as compiler
   import pom.preprocesser as preprocesser
 
-VERSION = "1.4"
+VERSION = "1.5"
 
 def webversion():
   version = None
@@ -28,7 +28,7 @@ def webversion():
   if float(version) > float(VERSION):
     print("Out of date, current version: " + version)
   else:
-    print("Up to date")
+    print("Up to date with current version")
 
 def compilet(itext, output, replaceargs):
   itext = preprocesser.process(itext, replaceargs)
@@ -54,7 +54,7 @@ def compilet(itext, output, replaceargs):
 
   print("\033[0;32mcompiler finished with " + str(warnings) + " warning" + "s"*((warnings!=1)*1) + ", output executable in '" + output +"'\033[00m")
   
-def runt(filename):
+def runt(filename, start=True):
   dictionary = {}
   with open(filename, 'r+b') as file:
     byte_arr = list(file.read())
@@ -84,10 +84,13 @@ def runt(filename):
         else:
           second += chr(entry)
 
-  m = application.memory()
-  m.load(dictionary, autosize=True)
-  a = application.emulator(m)
-  a.run()
+  if start:
+    m = application.memory()
+    m.load(dictionary, autosize=True)
+    a = application.emulator(m)
+    a.run()
+  else:
+    return dictionary
   
 def shell():
   while True:
@@ -115,13 +118,26 @@ if __name__ == "__main__":
   group.add_argument('-pc', '--pom_code',  nargs=1, action='store', metavar=('file'), help="Run a PomCode JSON file")
   group.add_argument('-h', '--help', action='store_true', help="List this help menu and exit")
   group.add_argument('-v', '--version', action='store_true', help="List the current Pom version")
+  group.add_argument('-up', '--unparse', nargs=2, metavar=('input', 'output'), action="store", help="Turn a pom executable into a PomCode json file")
   parser.add_argument('-r', '--replace', nargs=2, metavar=('variable', 'value'), action="append", help="Add a preprocesser replace item, only used with -c / --compile")
+  parser.add_argument('-pp', '--prettyprint', action='store_true', help="Adds detail to the output of some operations, only used with -v / --version and -up / --unparse")
 
   args = parser.parse_args()
   replaceargs = {}
+  prettyprint = None
 
+  if args.prettyprint != False:
+    if args.unparse == None and args.version == False:
+      parser.error('-pp / --prettyprint can only be used with -up / --unparse or -v / --version')
+    prettyprint = 2
+  
+  if args.version != False:
+    print("Pom Version " + VERSION)
+    if prettyprint != None:
+      webversion()
+  
   if args.help != False:
-    print("""usage: pom [run] [-h] [-v] [-c input output] [-pc file] [-r variable value]
+    print("""usage: pom [run] [-h] [-v] [-c input output] [-pc file] [-r variable value] [-pp]
 
 PomCode Commands:
   -pc / --pom_code [file] ............ Run a PomCode JSON file
@@ -133,11 +149,10 @@ Pom Commands:
 
 Misc Commands:
   -h / --help ........................ List this help menu and exit
-  -v / --version ..................... List the current Pom version""")
-
-  if args.version != False:
-    print("Pom Version " + VERSION)
-    webversion()
+  -v / --version ..................... List the current Pom version
+  -up / --unparse [input] [output] ... Turn a pom executable into a PomCode json file
+  -pp / --prettyprint ................ Output of the unparse operation pretty, only if used with -up / --unparse
+                                       Prints more version info, only if used with -v / --version""")
 
   if len(sys.argv) == 1:
     print("Pom Shell v" + VERSION)
@@ -164,6 +179,19 @@ Misc Commands:
       parser.error('\"' + args.compile[0] + '\" file not found')
 
     compilet(text, args.compile[1], replaceargs)
+
+  if args.unparse != None:
+    try:
+      open(args.unparse[0]).close()
+    except:
+      parser.error('\"' + args.unparse[0] + '\" file not found')
+    rdictionary = runt(args.unparse[0], False)
+
+    if prettyprint:
+      print("unparse: pretty printing " + args.unparse[1])
+    
+    with open(args.unparse[1], 'w') as file:
+      file.write(json.dumps(rdictionary, indent=prettyprint))
   
   if args.run != None:
     try:
