@@ -70,6 +70,11 @@ def _get_type(string):
       return "starts"
   elif quotetext[-1] == "\"":
     return "_e_notvar"
+  elif quotetext[0] == "[":
+    if quotetext[-1] == "]":
+      return "jumppoint"
+    else:
+      return "_e_none"
   elif _is_int(string):
     return "int"
   elif string in variables:
@@ -182,7 +187,7 @@ def _parse_line(line, linen):
         quotetext = text.replace("\\\"", "__internalquote__")
         text = text.replace("\\\"", "\"")
         if "\"" in quotetext:
-          if quotetext[:-1] == "\"":
+          if quotetext[-1] == "\"":
             rstring_t += " " + text[:-1]
             command.append(rstring_t)
             rstring = False
@@ -205,24 +210,23 @@ def _parse_line(line, linen):
       elif next_r:
         gtype = _get_type(text)
         text = text.replace("\\\"", "\"")
-        if gtype == "string":
-          command.append(text[1:-1])
-        elif gtype == "int":
-          command.append(int(text))
-        elif gtype == "starts":
-          rstring_t = text[1:]
-          rstring = True
-        elif gtype == "var":
-          if command[0] == "jump":
-            _error("value error: cannot use variable for jump function", text, linen, " ".join(line), assemble)
+        if command[0] == "jump":
+          if gtype == "jumppoint":
+            command.append(text[1:-1])
           else:
-            command.append(variables[text])
-        elif gtype == "_e_notvar":
-          _error("type error: invalid value type", text, linen, " ".join(line), assemble)
+            _error("value error: must use jump point type", text, linen, " ".join(line), assemble)
         else:
-          print(gtype)
-          if command[0] == "jump":
-            _error("value error: cannot use variable for jump function", text, linen, " ".join(line), assemble)
+          if gtype == "string":
+            command.append(text[1:-1])
+          elif gtype == "int":
+            command.append(int(text))
+          elif gtype == "starts":
+            rstring_t = text[1:]
+            rstring = True
+          elif gtype == "var":
+            command.append(variables[text])
+          elif gtype in ["_e_notvar", "jumppoint"]:
+            _error("type error: invalid value type", text, linen, " ".join(line), assemble)
           else:
             _error("value error: variable does not exist", text, linen, " ".join(line), assemble)
         next_r = False
@@ -230,11 +234,11 @@ def _parse_line(line, linen):
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
         
     elif ctype == "if":
-      if rstring: ## work here
+      if rstring:
         quotetext = text.replace("\\\"", "__internalquote__")
         text = text.replace("\\\"", "\"")
         if "\"" in quotetext:
-          if quotetext[:-1] == "\"":
+          if quotetext[-1] == "\"":
             rstring_t += " " + text[:-1]
             command.append(rstring_t)
             rstring = False
@@ -258,9 +262,14 @@ def _parse_line(line, linen):
       elif len(command) < 3 or next_r:
         gtype = _get_type(text)
         text = text.replace("\\\"", "\"")
-        if gtype == "string":
-          if intcompare and not next_r:
-            _error("type error: operator type does not match value type", text, linen, " ".join(line), assemble)
+        if next_r:
+          if gtype == "jumppoint":
+            command.append(text[1:-1])
+          else:
+            _error("value error: must use jump point type", text, linen, " ".join(line), assemble)
+        elif gtype == "string":
+          if intcompare:
+              _error("type error: operator type does not match value type", text, linen, " ".join(line), assemble)
           command.append(text[1:-1])
         elif gtype == "operator":
           if len(command) < 3:
@@ -282,18 +291,15 @@ def _parse_line(line, linen):
         elif gtype == "int":
           command.append(int(text))
         elif gtype == "starts":
-          if intcompare and not next_r:
+          if intcompare:
             _error("type error: operator type does not match value type", text, linen, " ".join(line), assemble)
           rstring_t = text[1:]
           rstring = True
         elif gtype == "var":
-          if not next_r:
-            if intcompare:
-              if variables[text][2] != "int":
-                _error("type error: operator type does not match variable type", text, linen, " ".join(line), assemble)
-            command.append(variables[text])
-          else:
-            _error("value error: cannot use variable for jump placement", text, linen, " ".join(line), assemble)
+          if intcompare:
+            if variables[text][2] != "int":
+              _error("type error: operator type does not match variable type", text, linen, " ".join(line), assemble)
+          command.append(variables[text])
         elif gtype == "_e_notvar":
           _error("type error: invalid value type", text, linen, " ".join(line), assemble)
         else:
@@ -303,7 +309,7 @@ def _parse_line(line, linen):
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
         
     elif ctype == "variable":
-      if rstring: ## work here
+      if rstring:
         quotetext = text.replace("\\\"", "__internalquote__")
         text = text.replace("\\\"", "\"")
         if "\"" in quotetext:
@@ -369,6 +375,8 @@ def _parse_line(line, linen):
         else:
           if gtype in ["var", "_e_none"]:
             _error("type error: cannot use variables in defign statement", text, linen, " ".join(line), assemble)
+          elif gtype == "jumppoint":
+            _error("type error: cannot use jump statement in defign statement", text, linen, " ".join(line), assemble)
           else:
             if gtype == "_e_notvar": # check if the variable syntax is wrong
               _error("type error: invalid value type", text, linen, " ".join(line), assemble)
@@ -559,7 +567,7 @@ def _parse_line(line, linen):
             actions.append([3, thing])
         else:
           hold = ""
-          for char in item:
+          for char in str(item):
             if char == "\\":
               hold += char
               continue
@@ -594,6 +602,8 @@ def _parse_line(line, linen):
     elif command[0] == "jump":
       if len(command) != 2:
         _error("forward error: must forward a value", line[0], linen, " ".join(line), "")
+      if " " in command[1]: ######################################## FIX THIS ERROR
+        _error("forward error: jump point cannot contain spaces", text, linen, " ".join(line), assemble)
       actions.append([1, 3])
       actions.append([5, command[1], text, linen, " ".join(line), assemble])
     elif command[0] == "flush":
@@ -794,7 +804,7 @@ def _shell(text): # this is the shell script
               break
         if error:
           _error("syntax error: cannot have leading whitespace on a command", (len(text) - len(text.lstrip()))*" ", 0, text, "")
-      elif command[0][0] == ">" and command[0][-1] == "<":
+      elif command[0][0] == "<" and command[0][-1] == ">":
         jvalue = str(command[0][1:-1])
         if jvalue in jumps:
           _logmsg("line 0: jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
@@ -840,7 +850,7 @@ def compile(text):
   for line in range(len(lines)):
     command = lines[line].rstrip().split(" ")
     if (len(lines[line]) - len(lines[line].lstrip())) != len(lines[line]): # check to see if the line is blank
-      if command[0][0] != "#": # for commented out lines
+      #if command[0][0] != "#": # for commented out lines
         if (len(lines[line]) - len(lines[line].lstrip())) >= 1:
           error = True
           for char in command[1:]:
@@ -850,7 +860,7 @@ def compile(text):
                 break
           if error:
             _error("syntax error: cannot have leading whitespace on a command", (len(lines[line]) - len(lines[line].lstrip()))*" ", line, lines[line], "")
-        elif command[0][0] == ">" and command[0][-1] == "<":
+        elif command[0][0] == "<" and command[0][-1] == ">":
           jvalue = str(command[0][1:-1])
           if jvalue in jumps:
             _logmsg("line " + str(line+1) + ": jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')

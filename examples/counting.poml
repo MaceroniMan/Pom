@@ -6,7 +6,7 @@ int:3 count < 0 # init 'int' type variable with the value of 0
 int:3 l # defign a new variable
 
 
-%if count == 20 < "break" # if count is 20 then continue, otherwise jump to point                                 'break'
+@if count != 20 < "break" # if count is 20 then continue, otherwise jump to point                                 'break'
 
 l < count + 1 # add 1 to that variable
 

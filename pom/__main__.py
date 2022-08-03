@@ -120,20 +120,20 @@ if __name__ == "__main__":
   group.add_argument('-v', '--version', action='store_true', help="List the current Pom version")
   group.add_argument('-up', '--unparse', nargs=2, metavar=('input', 'output'), action="store", help="Turn a pom executable into a PomCode json file")
   parser.add_argument('-r', '--replace', nargs=2, metavar=('variable', 'value'), action="append", help="Add a preprocesser replace item, only used with -c / --compile")
-  parser.add_argument('-pp', '--prettyprint', action='store_true', help="Adds detail to the output of some operations, only used with -v / --version and -up / --unparse")
+  parser.add_argument('-vb', '--verbose', action='store_true', help="Adds detail to the output of some operations, only used with -v / --version and -up / --unparse")
 
   args = parser.parse_args()
   replaceargs = {}
-  prettyprint = None
+  verbose = None
 
-  if args.prettyprint != False:
+  if args.verbose != False:
     if args.unparse == None and args.version == False:
-      parser.error('-pp / --prettyprint can only be used with -up / --unparse or -v / --version')
-    prettyprint = 2
+      parser.error('-vb / --verbose can only be used with -up / --unparse or -v / --version')
+    verbose = 2
   
   if args.version != False:
     print("Pom Version " + VERSION)
-    if prettyprint != None:
+    if verbose != None:
       webversion()
   
   if args.help != False:
@@ -151,7 +151,7 @@ Misc Commands:
   -h / --help ........................ List this help menu and exit
   -v / --version ..................... List the current Pom version
   -up / --unparse [input] [output] ... Turn a pom executable into a PomCode json file
-  -pp / --prettyprint ................ Output of the unparse operation pretty, only if used with -up / --unparse
+  -vb / --verbose .................... Output of the unparse operation pretty, only if used with -up / --unparse
                                        Prints more version info, only if used with -v / --version""")
 
   if len(sys.argv) == 1:
@@ -187,11 +187,11 @@ Misc Commands:
       parser.error('\"' + args.unparse[0] + '\" file not found')
     rdictionary = runt(args.unparse[0], False)
 
-    if prettyprint:
+    if verbose:
       print("unparse: pretty printing " + args.unparse[1])
     
     with open(args.unparse[1], 'w') as file:
-      file.write(json.dumps(rdictionary, indent=prettyprint))
+      file.write(json.dumps(rdictionary, indent=verbose))
   
   if args.run != None:
     try:
