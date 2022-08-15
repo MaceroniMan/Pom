@@ -6,9 +6,7 @@ A small compiled language that compiles to PomScript, a small homemade set of in
 
 ## Installing
 
-There are two ways to handle installing Pom. The recommended way to install Pom is using the [simpleinstall.py](https://github.com/MaceroniMan/Pom/blob/master/simpleinstall.py) script. This script will download and install all the required components just by running it. It will also function as a updater. (This means that if you run it again it will install all the new code)
-
-However if you like to see what you are installing, use this [link](https://github.com/MaceroniMan/Pom/wiki#installing) to visit the wiki page to install Pom. Pom is installed with `pip` and also places an executable in the python executable location.
+To install Pom, use this [link](https://github.com/MaceroniMan/Pom/wiki#installing) to visit the wiki page on installing Pom. Pom is installed with `pip` and also places an executable in the python executable location so it can be run with a simple `pom` instead of the longer way `python(3) -m pom`, however both ways still do work.
 
 ## Examples
 
