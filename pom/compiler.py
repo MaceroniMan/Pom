@@ -183,7 +183,7 @@ def _parse_line(line, linen):
     text = nline[item]
     
     if ctype == "func":
-      if rstring: ## work here
+      if rstring:
         quotetext = text.replace("\\\"", "__internalquote__")
         text = text.replace("\\\"", "\"")
         if "\"" in quotetext:
@@ -602,8 +602,6 @@ def _parse_line(line, linen):
     elif command[0] == "jump":
       if len(command) != 2:
         _error("forward error: must forward a value", line[0], linen, " ".join(line), "")
-      if " " in command[1]: ######################################## FIX THIS ERROR
-        _error("forward error: jump point cannot contain spaces", text, linen, " ".join(line), assemble)
       actions.append([1, 3])
       actions.append([5, command[1], text, linen, " ".join(line), assemble])
     elif command[0] == "flush":
@@ -794,23 +792,24 @@ def _parse_line(line, linen):
 def _shell(text): # this is the shell script
   command = text.rstrip().split(" ")
   if (len(text) - len(text.lstrip())) != len(text): # check to see if the line is blank
-    if command[0][0] != "#": # for commented out lines
-      if (len(text) - len(text.lstrip())) >= 1:
-        error = True
-        for char in command[1:]:
-          if len(char) > 0:
-            if char[0] == "#":
-              error = False
-              break
-        if error:
-          _error("syntax error: cannot have leading whitespace on a command", (len(text) - len(text.lstrip()))*" ", 0, text, "")
-      elif command[0][0] == "<" and command[0][-1] == ">":
-        jvalue = str(command[0][1:-1])
-        if jvalue in jumps:
-          _logmsg("line 0: jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
-        jumps[jvalue] = [len(actions), 0]
-      else:
-        _parse_line(command, 0)
+    if(len(text) - len(text.lstrip())) >= 1:
+      error = True
+      for char in command[1:]:
+        if len(char) > 0:
+          if char[0] == "#":
+            error = False
+            break
+      if error:
+        _error("syntax error: cannot have leading whitespace on a command", (len(text) - len(text.lstrip()))*" ", 0, text, "")
+    elif command[0][0] == "#":
+      pass # need to make sure that single line comments are not passed in
+    elif command[0][0] == "<" and command[0][-1] == ">":
+      jvalue = str(command[0][1:-1])
+      if jvalue in jumps:
+        _logmsg("line 0: jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
+      jumps[jvalue] = [len(actions), 0]
+    else:
+      _parse_line(command, 0)
 
 def _shell_compile(): # this is to compile the shell
   big_d = {}
@@ -850,23 +849,24 @@ def compile(text):
   for line in range(len(lines)):
     command = lines[line].rstrip().split(" ")
     if (len(lines[line]) - len(lines[line].lstrip())) != len(lines[line]): # check to see if the line is blank
-      #if command[0][0] != "#": # for commented out lines
-        if (len(lines[line]) - len(lines[line].lstrip())) >= 1:
-          error = True
-          for char in command[1:]:
-            if len(char) > 0:
-              if char[0] == "#":
-                error = False
-                break
-          if error:
-            _error("syntax error: cannot have leading whitespace on a command", (len(lines[line]) - len(lines[line].lstrip()))*" ", line, lines[line], "")
-        elif command[0][0] == "<" and command[0][-1] == ">":
-          jvalue = str(command[0][1:-1])
-          if jvalue in jumps:
-            _logmsg("line " + str(line+1) + ": jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
-          jumps[jvalue] = [len(actions), line+1]
-        else:
-          _parse_line(command, line)
+      if (len(lines[line]) - len(lines[line].lstrip())) >= 1:
+        error = True
+        for char in command[1:]:
+          if len(char) > 0:
+            if char[0] == "#":
+              error = False
+              break
+        if error:
+          _error("syntax error: cannot have leading whitespace on a command", (len(lines[line]) - len(lines[line].lstrip()))*" ", line, lines[line], "")
+      elif command[0][0] == "#":
+        pass # need to make sure that single line comments are not passed in
+      elif command[0][0] == "<" and command[0][-1] == ">":
+        jvalue = str(command[0][1:-1])
+        if jvalue in jumps:
+          _logmsg("line " + str(line+1) + ": jump point '" + jvalue + "' has already been defined on line " + str(jumps[jvalue][1]), 'yellow')
+        jumps[jvalue] = [len(actions), line+1]
+      else:
+        _parse_line(command, line)
   
   big_d = {}
 
