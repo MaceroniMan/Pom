@@ -9,6 +9,7 @@ actions = []
 jumps = {}
 
 warnings = 0
+longcomment = False
 
 alphabets = string.ascii_lowercase + string.ascii_lowercase.upper() + "1234567890_"
 ops = {"==":1,"!=":2,"<<":3,">>":4,"<=":5,">=":6}
@@ -100,6 +101,7 @@ def _get_type(string):
     return "_e_none"
 
 def _parse_line(line, linen):
+  global longcomment
   ctype = "null"
   command = []
   mlength = 0
@@ -179,6 +181,10 @@ def _parse_line(line, linen):
     if nline[item][0] == "#":
       if not rstring:
         break
+    if nline[item][0] == "#[":
+      if not rstring:
+        longcomment = True
+        break
     assemble += " " + nline[item]
     text = nline[item]
     
@@ -232,7 +238,7 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
-        
+        ####################################################################
     elif ctype == "if":
       if rstring:
         quotetext = text.replace("\\\"", "__internalquote__")
@@ -271,13 +277,18 @@ def _parse_line(line, linen):
           if intcompare:
               _error("type error: operator type does not match value type", text, linen, " ".join(line), assemble)
           command.append(text[1:-1])
+        elif gtype == "internal_type": # work here
+          pass #####LOL#####LOL#####LOL#####
         elif gtype == "operator":
-          if len(command) < 3:
+          # 1 is the index of the operator
+          if len(command) == 1:
             command.append(text)
-          else:
+          elif len(command) > 1:
             _error("value error: cannot use operator outside a conditional", text, linen, " ".join(line), assemble)
+          else:
+            _error("value error: cannot use operator as a value", text, linen, " ".join(line), assemble)
         elif gtype == "int_operator":
-          if len(command) < 3:
+          if len(command) == 1:
             if type(command[0]) == list:
               if command[0][2] != "int":
                 _error("type error: previous variable type does not match operator type", text, linen, " ".join(line), assemble)
@@ -286,8 +297,10 @@ def _parse_line(line, linen):
                 _error("type error: previous value type does not match operator type", text, linen, " ".join(line), assemble)
             intcompare = True
             command.append(text)
-          else:
+          elif len(command) > 1:
             _error("value error: cannot use operator outside a conditional", text, linen, " ".join(line), assemble)
+          else:
+            _error("value error: cannot use operator as a value", text, linen, " ".join(line), assemble)
         elif gtype == "int":
           command.append(int(text))
         elif gtype == "starts":
@@ -307,7 +320,7 @@ def _parse_line(line, linen):
         next_r = False
       else:
         _error("forward error: must have forward between values", text, linen, " ".join(line), assemble)
-        
+        ####################################################################
     elif ctype == "variable":
       if rstring:
         quotetext = text.replace("\\\"", "__internalquote__")
@@ -397,6 +410,7 @@ def _parse_line(line, linen):
         _error("syntax error: must forward value", text, linen, " ".join(line), assemble)
         
     elif ctype == "reset":
+      print(command)
       var = variables[command[0]]
       if rstring:
         quotetext = text.replace("\\\"", "__internalquote__")
@@ -554,7 +568,7 @@ def _parse_line(line, linen):
   
   if command == []:
     _error("syntax error: cannot parse line", " ".join(line), linen, " ".join(line), "")
-  
+
   if ctype == "func":
     # 1 command, 2 value, 3 command (changing, compiler only), 4 command (changing, compiler only)
     if command[0] == "print":
@@ -616,7 +630,10 @@ def _parse_line(line, linen):
     if len(command) == 3:
       if command[1] == "~":
         _error("syntax error: cannot auto-set a blank variable", text, linen, " ".join(line), assemble)
-      joinv = ""
+      if command[0] == "int":
+        joinv = "0"
+      else:
+        joinv = ""
     elif len(command) == 2:
       _error("syntax error: must defign a variable with a name", assemble, linen, " ".join(line), assemble)
     elif command[0] == "int":
@@ -647,7 +664,7 @@ def _parse_line(line, linen):
   elif ctype == "reset":
     var = variables[command[0]]
 
-    if var[2] == "int":
+    if var[2] == "int": ##################################### fix this
       if type(command[1]) == list:
         ivar = command[1]
         #if ivar[3] > var[3]:
@@ -790,6 +807,7 @@ def _parse_line(line, linen):
       actions.append([3, item])
 
 def _shell(text): # this is the shell script
+  global longcomment
   command = text.rstrip().split(" ")
   if (len(text) - len(text.lstrip())) != len(text): # check to see if the line is blank
     if(len(text) - len(text.lstrip())) >= 1:
@@ -845,19 +863,31 @@ def _shell_compile(): # this is to compile the shell
   return big_d
 
 def compile(text):
+  global longcomment
   lines = text.split("\n")
   for line in range(len(lines)):
     command = lines[line].rstrip().split(" ")
-    if (len(lines[line]) - len(lines[line].lstrip())) != len(lines[line]): # check to see if the line is blank
+    print(command)
+    if longcomment:
+      if lines[line].lstrip().startswith("#]"):
+        longcomment = False
+    elif (len(lines[line]) - len(lines[line].lstrip())) != len(lines[line]): # check to see if the line is blank
       if (len(lines[line]) - len(lines[line].lstrip())) >= 1:
         error = True
         for char in command[1:]:
+          print(char)
           if len(char) > 0:
             if char[0] == "#":
               error = False
               break
+            if char.startswith("#["):
+              longcomment = True
+              error = False
+              break
         if error:
           _error("syntax error: cannot have leading whitespace on a command", (len(lines[line]) - len(lines[line].lstrip()))*" ", line, lines[line], "")
+      elif lines[line].startswith("#["):
+        longcomment = True
       elif command[0][0] == "#":
         pass # need to make sure that single line comments are not passed in
       elif command[0][0] == "<" and command[0][-1] == ">":
